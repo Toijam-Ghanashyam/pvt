@@ -1,0 +1,37 @@
+[
+    {
+        "parcel_id": "P-002",
+        "source": "Satellite Data",
+        "date": "2026-09-02",
+        "transformation": "Boundary Verification",
+        "conflict": "No conflict detected",
+        "decision_reason": "Boundary matches verified source",
+        "human_approval": true,
+        "status": "APPROVED",
+        "zk_commitment": "ba6ecd067f8648c362b3bd11318454c9af4891fabb7103d093341ae9b296a647",
+        "commitment_nonce": "dc9d7683c837c8d72983131b8b5c779f"
+    },
+    {
+        "parcel_id": "P-003",
+        "source": "Survey Data",
+        "date": "2026-09-02",
+        "transformation": "Geometry Validation",
+        "conflict": "Area mismatch detected",
+        "decision_reason": "Requires human verification",
+        "human_approval": false,
+        "status": "REJECTED",
+        "zk_commitment": "75c643e37272bfe390db80308a8f3fdb3fb6d8a94b4ee900241c9f075ebc835d",
+        "commitment_nonce": "3b2160a829f598c6329dd04102b82a76"
+    },
+    {
+        "parcel_id": "P-001",
+        "source": "Survey Data",
+        "date": "2026-09-02T20:21:18.843960",
+        "transformation": "Geometry Validation + Overlap Check",
+        "conflict": "Neighbouring parcel overlap detected",
+        "decision_reason": "Parcel geometry is valid but overlap exists",
+        "human_approval": true,
+        "status": "APPROVED",
+        "zk_commitment": "4cbe24b7ddfb1f1874cfd48b56af9e5a556a0d636f54ff5b639231adca3172ea"
+    }
+]

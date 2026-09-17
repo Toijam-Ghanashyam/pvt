@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply font-sans text-slate-800 bg-slate-50 dark:bg-slate-950 dark:text-slate-100 antialiased transition-colors duration-200;
+  }
+}
+
+@layer utilities {
+  .nav-link {
+    @apply text-slate-200 hover:text-white transition-colors duration-200 text-sm font-medium;
+  }
+  .btn-primary {
+    @apply bg-accent-teal hover:bg-teal-700 text-white px-5 py-2 rounded shadow-md transition-colors duration-200 font-medium text-sm;
+  }
+  .btn-secondary {
+    @apply bg-transparent border border-white text-white hover:bg-white/10 px-5 py-2 rounded transition-colors duration-200 font-medium text-sm;
+  }
+  /* Official Gov Portal Utilitarian classes */
+  .gov-box {
+    @apply bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 shadow-[0_1px_2px_rgba(0,0,0,0.06)];
+  }
+  .gov-header-navy {
+    @apply bg-gov-navy text-white border-b-2 border-gov-saffron;
+  }
+  .gov-table-header {
+    @apply bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-b-2 border-slate-300 dark:border-slate-700 font-semibold text-xs uppercase tracking-wider;
+  }
+  .gov-btn {
+    @apply px-3 py-1.5 text-xs font-semibold rounded-none border transition-colors select-none inline-flex items-center gap-1.5;
+  }
+  .gov-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold border rounded-none uppercase tracking-wider;
+  }
+
+  /* ── Visual Overhaul Design System ── */
+  .section-spacing {
+    @apply py-24 lg:py-32;
+  }
+  .card-glass {
+    @apply bg-white/80 dark:bg-slate-900/60 backdrop-blur-md
+           border border-slate-200/60 dark:border-slate-700/40
+           shadow-card rounded-2xl;
+  }
+  .card-hover-lift {
+    @apply transition-all duration-300
+           hover:-translate-y-2 hover:shadow-xl hover:shadow-slate-900/10
+           dark:hover:shadow-black/20;
+  }
+  .section-title {
+    @apply text-3xl lg:text-4xl font-extrabold tracking-tight
+           text-navy-900 dark:text-white mb-4;
+  }
+  .section-subtitle {
+    @apply text-lg text-slate-600 dark:text-slate-300
+           max-w-2xl mx-auto leading-relaxed;
+  }
+}
+
+/* Accessibility Font-scale Root Classes */
+html.font-scale-sm {
+  font-size: 14px;
+}
+html.font-scale-base {
+  font-size: 16px;
+}
+html.font-scale-lg {
+  font-size: 18px;
+}
+
+/* Tricolor Top Bar */
+.india-tricolor-bar {
+  height: 4px;
+  background: linear-gradient(90deg, #FF9933 0%, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%, #138808 100%);
+  width: 100%;
+}
+
+/* Sidebar mobile drawer animation */
+@keyframes slide-in {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+.animate-slide-in {
+  animation: slide-in 0.25s ease-out;
+}
+
+/* Toast notification animation */
+@keyframes toast-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.animate-toast-in {
+  animation: toast-in 0.3s ease-out;
+}
+
+/* Modal fade-in animation */
+@keyframes fade-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
+
+
+/* Leaflet tooltip override */
+.leaflet-tooltip-custom {
+  background: #0f2145;
+  color: #fff;
+  border: 1px solid #142d5e;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+}
+
+/* Leaflet tile pane: Keep tiles natural and crisp without destructive color inversion */
+.map-2d-view .leaflet-tile-pane,
+.dark .map-2d-view .leaflet-tile-pane,
+.temporal-compare-view .leaflet-tile-pane,
+.dark .temporal-compare-view .leaflet-tile-pane {
+  filter: none !important;
+}
+
+
+

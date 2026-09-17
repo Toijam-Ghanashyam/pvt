@@ -1,0 +1,11 @@
+{
+  "conflicts": [
+    { "id": "c_001", "type": "overlap", "location_centroid": {"lat": 28.61, "lng": 77.21}, "source_a": {"name": "Forest", "centroid": {"lat": 28.61, "lng": 77.21}}, "source_b": {"name": "Revenue", "centroid": {"lat": 28.6101, "lng": 77.2101}}, "conflict_polygon_metrics": {"area_sqm": 100, "perimeter_m": 40} },
+    { "id": "c_002", "type": "overlap", "location_centroid": {"lat": 28.611, "lng": 77.211}, "source_a": {"name": "Forest", "centroid": {"lat": 28.611, "lng": 77.211}}, "source_b": {"name": "Revenue", "centroid": {"lat": 28.6111, "lng": 77.2111}}, "conflict_polygon_metrics": {"area_sqm": 120, "perimeter_m": 45} },
+    { "id": "c_003", "type": "overlap", "location_centroid": {"lat": 28.612, "lng": 77.212}, "source_a": {"name": "Forest", "centroid": {"lat": 28.612, "lng": 77.212}}, "source_b": {"name": "Revenue", "centroid": {"lat": 28.6121, "lng": 77.2121}}, "conflict_polygon_metrics": {"area_sqm": 90, "perimeter_m": 38} },
+    { "id": "c_004", "type": "gap", "location_centroid": {"lat": 19.01, "lng": 72.81}, "source_a": {"name": "Muni", "centroid": {"lat": 19.01, "lng": 72.81}}, "source_b": {"name": "State", "centroid": {"lat": 19.01, "lng": 72.8105}}, "conflict_polygon_metrics": {"area_sqm": 5, "perimeter_m": 200} },
+    { "id": "c_005", "type": "gap", "location_centroid": {"lat": 19.011, "lng": 72.811}, "source_a": {"name": "Muni", "centroid": {"lat": 19.011, "lng": 72.811}}, "source_b": {"name": "State", "centroid": {"lat": 19.011, "lng": 72.8112}}, "conflict_polygon_metrics": {"area_sqm": 2, "perimeter_m": 150} },
+    { "id": "c_006", "type": "gap", "location_centroid": {"lat": 19.012, "lng": 72.812}, "source_a": {"name": "Muni", "centroid": {"lat": 19.012, "lng": 72.812}}, "source_b": {"name": "State", "centroid": {"lat": 19.012, "lng": 72.8118}}, "conflict_polygon_metrics": {"area_sqm": 3, "perimeter_m": 210} },
+    { "id": "c_007", "type": "overlap", "location_centroid": {"lat": 13.08, "lng": 80.27}, "source_a": {"name": "Private", "centroid": {"lat": 13.08, "lng": 80.27}}, "source_b": {"name": "Gov", "centroid": {"lat": 13.08, "lng": 80.27}}, "conflict_polygon_metrics": {"area_sqm": 50, "perimeter_m": 30} }
+  ]
+}

@@ -1,15 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap, CircleMarker, Popup } from 'react-leaflet';
 import { useTheme } from '../../context/ThemeContext';
-import {
-  buildingsGeoJSON,
-  municipalGeoJSON,
-  utilitiesGeoJSON,
-  gtGeoJSON,
-  gnssGeoJSON,
-  MAP_CENTER,
-  MAP_ZOOM,
-} from '../../data/mockData';
+import { useDashboard } from '../../context/DashboardContext';
+import { MAP_CENTER, MAP_ZOOM } from '../../data/mockData';
 import { API_BASE_URL } from '../../config/api';
 
 /**
@@ -156,21 +149,8 @@ const BASEMAPS = {
 
 const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
   const { isDark } = useTheme();
+  const { geoData } = useDashboard();
   const [activeBasemap, setActiveBasemap] = React.useState(isDark ? 'dark' : 'osm');
-  const [livePlots, setLivePlots] = React.useState(null);
-  const [liveConflicts, setLiveConflicts] = React.useState(null);
-
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/cadastral-plots`)
-      .then(res => res.json())
-      .then(data => setLivePlots(data))
-      .catch(err => console.error("Error fetching plots:", err));
-
-    fetch(`${API_BASE_URL}/conflicts`)
-      .then(res => res.json())
-      .then(data => setLiveConflicts(data))
-      .catch(err => console.error("Error fetching conflicts:", err));
-  }, []);
 
   // Sync default basemap with theme toggle if user hasn't explicitly chosen
   useEffect(() => {
@@ -249,7 +229,7 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
         {layers.plots && (
           <GeoJSON
             key={`plots-${selectedPlotId}`}
-            data={livePlots || { type: 'FeatureCollection', features: [] }}
+            data={geoData?.plots || { type: 'FeatureCollection', features: [] }}
             style={(feature) => plotStyle(feature, selectedPlotId)}
             onEachFeature={onEachPlot}
           />
@@ -259,7 +239,7 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
         {layers.buildings && (
           <GeoJSON
             key="buildings"
-            data={buildingsGeoJSON}
+            data={geoData?.buildings || { type: 'FeatureCollection', features: [] }}
             style={buildingStyle}
           />
         )}
@@ -268,7 +248,7 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
         {layers.municipal && (
           <GeoJSON
             key="municipal"
-            data={municipalGeoJSON}
+            data={geoData?.municipal || { type: 'FeatureCollection', features: [] }}
             style={municipalStyle}
             onEachFeature={onEachMunicipal}
           />
@@ -278,15 +258,14 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
         {layers.utilities && (
           <GeoJSON
             key="utilities"
-            data={utilitiesGeoJSON}
+            data={geoData?.utilities || { type: 'FeatureCollection', features: [] }}
             style={utilityStyle}
             onEachFeature={onEachUtility}
           />
         )}
 
-        {/* Ground Truthing Points — orange circles */}
-        {layers.gt &&
-          gtGeoJSON.features.map((f) => (
+        {layers.gt && geoData?.gt?.features &&
+          geoData.gt.features.map((f) => (
             <CircleMarker
               key={f.properties.gt_id}
               center={[f.geometry.coordinates[1], f.geometry.coordinates[0]]}
@@ -303,9 +282,8 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
             </CircleMarker>
           ))}
 
-        {/* GNSS/CORS Stations — blue circles, slightly larger */}
-        {layers.gnss &&
-          gnssGeoJSON.features.map((f) => (
+        {layers.gnss && geoData?.gnss?.features &&
+          geoData.gnss.features.map((f) => (
             <CircleMarker
               key={f.properties.station_id}
               center={[f.geometry.coordinates[1], f.geometry.coordinates[0]]}
@@ -326,7 +304,7 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
         {layers.conflicts && (
           <GeoJSON
             key="conflicts"
-            data={liveConflicts || { type: 'FeatureCollection', features: [] }}
+            data={geoData?.conflicts || { type: 'FeatureCollection', features: [] }}
             style={conflictStyle}
             onEachFeature={onEachConflict}
           />

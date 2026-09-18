@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Building2 } from 'lucide-react';
-import { conflictsGeoJSON } from '../../data/mockData';
 import RevenueOfficeModal from './RevenueOfficeModal';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * ConflictsTable — Sortable table of all flagged conflicts.
@@ -42,13 +42,14 @@ const getConfidenceBadge = (score) => {
 };
 
 const ConflictsTable = ({ onRowClick, selectedPlotId }) => {
+  const { geoData } = useDashboard();
   const [sortKey, setSortKey] = useState('confidence_score');
   const [sortDir, setSortDir] = useState('desc');
   const [modalOpen, setModalOpen] = useState(false);
   const [activeModalConflict, setActiveModalConflict] = useState(null);
 
   const conflicts = useMemo(() => {
-    const data = conflictsGeoJSON.features.map((f) => f.properties);
+    const data = (geoData.conflicts?.features || []).map((f) => f.properties);
     return [...data].sort((a, b) => {
       const aVal = a[sortKey];
       const bVal = b[sortKey];

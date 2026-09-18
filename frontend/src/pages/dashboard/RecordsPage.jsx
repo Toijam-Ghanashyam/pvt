@@ -7,14 +7,13 @@ import {
   FileDown,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { revenueRecords } from '../../data/mockData';
 import { useDashboard } from '../../context/DashboardContext';
 import AnimateOnScroll from '../../components/common/AnimateOnScroll';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 
 const RecordsPage = () => {
   const navigate = useNavigate();
-  const { setSelectedPlotId, language } = useDashboard();
+  const { setSelectedPlotId, language, geoData } = useDashboard();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [taxFilter, setTaxFilter] = useState('ALL');
@@ -23,7 +22,7 @@ const RecordsPage = () => {
 
   // Filtered & Searched records
   const filteredRecords = useMemo(() => {
-    return revenueRecords.filter((r) => {
+    return (geoData.revenue || []).filter((r) => {
       const matchesSearch =
         r.plot_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.owner_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -38,8 +37,8 @@ const RecordsPage = () => {
   }, [searchQuery, taxFilter, discrepancyOnly]);
 
   // Aggregate stats
-  const totalRegistered = revenueRecords.reduce((s, r) => s + r.registered_area_sqm, 0);
-  const totalGis = revenueRecords.reduce((s, r) => s + r.gis_area_sqm, 0);
+  const totalRegistered = (geoData.revenue || []).reduce((s, r) => s + r.registered_area_sqm, 0);
+  const totalGis = (geoData.revenue || []).reduce((s, r) => s + r.gis_area_sqm, 0);
   const totalDiscrepancy = Math.abs(totalRegistered - totalGis);
 
   const handleInspectOnMap = (plotId) => {
@@ -190,7 +189,7 @@ const RecordsPage = () => {
       <div className="gov-box overflow-x-auto">
         <div className="p-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-            Showing {filteredRecords.length} of {revenueRecords.length} Cadastral Parcels
+            Showing {filteredRecords.length} of {(geoData.revenue || []).length} Cadastral Parcels
           </span>
           <span className="text-[11px] text-slate-500 font-mono">
             District: Lucknow · Sub-Division: Sadar

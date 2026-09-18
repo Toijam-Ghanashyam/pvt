@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { computeKPIs, topologyMetrics, plotsGeoJSON } from '../data/mockData';
+import { API_BASE_URL } from '../config/api';
 
 const DashboardContext = createContext(null);
 
@@ -33,6 +33,40 @@ export const DashboardProvider = ({ children }) => {
   // Language: 'en' | 'hi'
   const [language, setLanguage] = useState('en');
 
+  // Live GeoData state for API layers
+  const [geoData, setGeoData] = useState({
+    plots: null, buildings: null, conflicts: null,
+    municipal: null, utilities: null,
+    gt: null, gnss: null,
+    revenue: [], metrics: [], consensus: []
+  });
+
+  useEffect(() => {
+    const fetchAllLayers = async () => {
+      try {
+        const [plots, buildings, conflicts, municipal, utilities, gt, gnss, revenue, metrics, consensusRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/cadastral-plots`).then(res => res.json()),
+          fetch(`${API_BASE_URL}/buildings`).then(res => res.json()),
+          fetch(`${API_BASE_URL}/conflicts`).then(res => res.json()),
+          fetch(`${API_BASE_URL}/municipal`).then(res => res.json()),
+          fetch(`${API_BASE_URL}/utilities`).then(res => res.json()),
+          fetch(`${API_BASE_URL}/gt-surveys`).then(res => res.json()),
+          fetch(`${API_BASE_URL}/gnss-cors`).then(res => res.json()),
+          fetch(`${API_BASE_URL}/revenue`).then(res => res.json()),
+          fetch(`${API_BASE_URL}/metrics`).then(res => res.json()),
+          fetch(`${API_BASE_URL}/consensus`, { method: 'POST' }).then(res => res.json()).catch(() => ({ results: [] }))
+        ]);
+        setGeoData({ 
+          plots, buildings, conflicts, municipal, utilities, 
+          gt, gnss, revenue, metrics, consensus: consensusRes.results || [] 
+        });
+      } catch (error) {
+        console.error("Failed to load live data:", error);
+      }
+    };
+    fetchAllLayers();
+  }, []);
+
   // Apply fontScale class to documentElement
   useEffect(() => {
     const root = document.documentElement;
@@ -59,12 +93,19 @@ export const DashboardProvider = ({ children }) => {
     }, 2000);
   }, []);
 
-  const kpis = computeKPIs();
-  const repaired =
-    topologyMetrics.find((m) => m.metric_name === 'Self-Intersecting Polygons Repaired')?.metric_value || 0;
-  const snapped =
-    topologyMetrics.find((m) => m.metric_name === 'Building Edges Snapped to Boundaries')?.metric_value || 0;
-  const plotsCount = plotsGeoJSON.features.length;
+  const totalBuildings = geoData.buildings?.features?.length || 0;
+  const encroachments = geoData.conflicts?.features?.length || 0;
+  
+  const kpis = {
+    totalAreaHectares: 12.85, // Stub
+    totalBuildings,
+    encroachments,
+    accuracyRate: totalBuildings > 0 ? (((totalBuildings - encroachments) / totalBuildings) * 100).toFixed(1) : 100.0,
+  };
+  
+  const repaired = geoData.metrics?.find((m) => m.metric_name === 'Self-Intersecting Polygons Repaired')?.metric_value || 0;
+  const snapped = geoData.metrics?.find((m) => m.metric_name === 'Building Edges Snapped to Boundaries')?.metric_value || 0;
+  const plotsCount = geoData.plots?.features?.length || 0;
 
   return (
     <DashboardContext.Provider
@@ -89,6 +130,8 @@ export const DashboardProvider = ({ children }) => {
         repaired,
         snapped,
         plotsCount,
+        geoData,
+        setGeoData,
       }}
     >
       {children}

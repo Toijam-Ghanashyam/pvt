@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { DeckGL } from '@deck.gl/react';
 import { GeoJsonLayer } from '@deck.gl/layers';
-import { buildingsGeoJSON, plotsGeoJSON, MAP_CENTER } from '../../data/mockData';
+import { MAP_CENTER } from '../../data/mockData';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * ElevationView — 3D extruded building footprints using deck.gl.
@@ -23,7 +24,8 @@ const INITIAL_VIEW_STATE = {
 };
 
 const ElevationView = () => {
-  const hasElevation = buildingsGeoJSON.features.some(
+  const { geoData } = useDashboard();
+  const hasElevation = (geoData.buildings?.features || []).some(
     (f) => f.properties.elevation_m != null
   );
 
@@ -40,7 +42,7 @@ const ElevationView = () => {
     // 2. Cadastral parcel plot boundaries projected on 3D ground plane
     new GeoJsonLayer({
       id: 'plots-3d-boundary',
-      data: plotsGeoJSON,
+      data: geoData.plots || { type: 'FeatureCollection', features: [] },
       filled: false,
       stroked: true,
       getLineColor: [59, 130, 246, 255], // bright blue
@@ -52,7 +54,7 @@ const ElevationView = () => {
     // 3. 3D Extruded Building Footprints with DSM height elevation
     new GeoJsonLayer({
       id: 'buildings-3d',
-      data: buildingsGeoJSON,
+      data: geoData.buildings || { type: 'FeatureCollection', features: [] },
       extruded: true,
       wireframe: true,
       filled: true,

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
-import { plotsGeoJSON, buildingsGeoJSON, MAP_CENTER, MAP_ZOOM } from '../../data/mockData';
+import { MAP_CENTER, MAP_ZOOM } from '../../data/mockData';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * TemporalCompareView — Side-by-side swipe comparison between two base maps.
@@ -44,6 +45,7 @@ const buildingOverlayStyle = () => ({
 });
 
 const TemporalCompareView = () => {
+  const { geoData } = useDashboard();
   const [sliderPos, setSliderPos] = useState(50); // percentage 0-100
   const [showOverlay, setShowOverlay] = useState(true); // default true so user sees boundaries!
   const [isDragging, setIsDragging] = useState(false);
@@ -116,10 +118,10 @@ const TemporalCompareView = () => {
               attribution='&copy; Esri'
               maxZoom={19}
             />
-            {showOverlay && (
+            {showOverlay && geoData.plots && geoData.buildings && (
               <>
-                <GeoJSON data={plotsGeoJSON} style={plotOverlayStyle} />
-                <GeoJSON data={buildingsGeoJSON} style={buildingOverlayStyle} />
+                <GeoJSON data={geoData.plots} style={plotOverlayStyle} />
+                <GeoJSON data={geoData.buildings} style={buildingOverlayStyle} />
               </>
             )}
           </MapContainer>
@@ -146,10 +148,10 @@ const TemporalCompareView = () => {
               attribution='&copy; OSM'
               maxZoom={19}
             />
-            {showOverlay && (
+            {showOverlay && geoData.plots && geoData.buildings && (
               <>
-                <GeoJSON data={plotsGeoJSON} style={plotOverlayStyle} />
-                <GeoJSON data={buildingsGeoJSON} style={buildingOverlayStyle} />
+                <GeoJSON data={geoData.plots} style={plotOverlayStyle} />
+                <GeoJSON data={geoData.buildings} style={buildingOverlayStyle} />
               </>
             )}
           </MapContainer>

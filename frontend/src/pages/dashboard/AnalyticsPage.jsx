@@ -10,21 +10,20 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { useDashboard } from '../../context/DashboardContext';
-import { plotsGeoJSON, buildingsGeoJSON, conflictsGeoJSON, municipalGeoJSON, utilitiesGeoJSON, gtGeoJSON, gnssGeoJSON } from '../../data/mockData';
 import AnimateOnScroll from '../../components/common/AnimateOnScroll';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 
 const AnalyticsPage = () => {
-  const { kpis, repaired, snapped, plotsCount, language } = useDashboard();
+  const { kpis, repaired, snapped, plotsCount, language, geoData } = useDashboard();
 
   const datasetStats = [
-    { name: 'Cadastral Revenue Plots', nameHi: 'कडस्ट्रल भू-खण्ड (खसरा)', count: plotsGeoJSON.features.length, unit: 'Parcels', source: 'State Land Records (RoR)', status: 'Verified' },
-    { name: 'AI Building Footprints', nameHi: 'एआई निर्मित भवन', count: buildingsGeoJSON.features.length, unit: 'Structures', source: 'High-Res Drone Orthomosaic', status: 'Synthesized' },
-    { name: 'Spatial Overlap Conflicts', nameHi: 'स्थानिक अतिक्रमण / विवाद', count: conflictsGeoJSON.features.length, unit: 'Encroachments', source: 'Spatial Conflict Engine', status: 'Action Required', alert: true },
-    { name: 'Municipal Zoning Boundaries', nameHi: 'नगर निगम मास्टर प्लान', count: municipalGeoJSON.features.length, unit: 'Zones', source: 'Lucknow Municipal Corp', status: 'Harmonized' },
-    { name: 'Utility Networks (Water/Power)', nameHi: 'उपयोगिता नेटवर्क लाइनें', count: utilitiesGeoJSON.features.length, unit: 'Pipelines', source: 'Dept. of Urban Utilities', status: 'Harmonized' },
-    { name: 'Ground Truthing Checkpoints', nameHi: 'धरातलीय सत्यापन बिंदु', count: gtGeoJSON.features.length, unit: 'Survey Points', source: 'Field Survey Team A/B/C', status: 'Calibrated' },
-    { name: 'GNSS / CORS Base Stations', nameHi: 'जीएनएसएस कॉर्स स्टेशन', count: gnssGeoJSON.features.length, unit: 'Stations', source: 'Survey of India Network', status: 'Continuous Active' },
+    { name: 'Cadastral Revenue Plots', nameHi: 'कडस्ट्रल भू-खण्ड (खसरा)', count: geoData.plots?.features?.length || 0, unit: 'Parcels', source: 'State Land Records (RoR)', status: 'Verified' },
+    { name: 'AI Building Footprints', nameHi: 'एआई निर्मित भवन', count: geoData.buildings?.features?.length || 0, unit: 'Structures', source: 'High-Res Drone Orthomosaic', status: 'Synthesized' },
+    { name: 'Spatial Overlap Conflicts', nameHi: 'स्थानिक अतिक्रमण / विवाद', count: geoData.conflicts?.features?.length || 0, unit: 'Encroachments', source: 'Spatial Conflict Engine', status: 'Action Required', alert: true },
+    { name: 'Municipal Zoning Boundaries', nameHi: 'नगर निगम मास्टर प्लान', count: geoData.municipal?.features?.length || 0, unit: 'Zones', source: 'Lucknow Municipal Corp', status: 'Harmonized' },
+    { name: 'Utility Networks (Water/Power)', nameHi: 'उपयोगिता नेटवर्क लाइनें', count: geoData.utilities?.features?.length || 0, unit: 'Pipelines', source: 'Dept. of Urban Utilities', status: 'Harmonized' },
+    { name: 'Ground Truthing Checkpoints', nameHi: 'धरातलीय सत्यापन बिंदु', count: geoData.gt?.features?.length || 0, unit: 'Survey Points', source: 'Field Survey Team A/B/C', status: 'Calibrated' },
+    { name: 'GNSS / CORS Base Stations', nameHi: 'जीएनएसएस कॉर्स स्टेशन', count: geoData.gnss?.features?.length || 0, unit: 'Stations', source: 'Survey of India Network', status: 'Continuous Active' },
   ];
 
   return (

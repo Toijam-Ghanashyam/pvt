@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FileDown, User, Receipt, Hash, Ruler, AlertCircle, Brain } from 'lucide-react';
-import { revenueRecords, conflictsGeoJSON } from '../../data/mockData';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * PlotInspectionPanel — Appears when a cadastral plot is clicked.
@@ -49,6 +49,7 @@ const ConfidenceBar = ({ label, value, threshold = 78 }) => {
 };
 
 const PlotInspectionPanel = ({ selectedPlotId }) => {
+  const { geoData } = useDashboard();
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
 
@@ -109,10 +110,10 @@ const PlotInspectionPanel = ({ selectedPlotId }) => {
   }
 
   /* Find revenue record for the selected plot */
-  const record = revenueRecords.find((r) => r.plot_id === selectedPlotId);
+  const record = (geoData.revenue || []).find((r) => r.plot_id === selectedPlotId);
 
   /* Find linked conflict (if any) */
-  const conflict = conflictsGeoJSON.features.find(
+  const conflict = (geoData.conflicts?.features || []).find(
     (f) => f.properties.plot_id === selectedPlotId
   );
 

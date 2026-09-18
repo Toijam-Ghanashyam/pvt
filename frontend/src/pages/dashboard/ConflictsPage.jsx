@@ -11,7 +11,6 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { conflictsGeoJSON } from '../../data/mockData';
 import { useDashboard } from '../../context/DashboardContext';
 import AnimateOnScroll from '../../components/common/AnimateOnScroll';
 import RevenueOfficeModal from '../../components/dashboard/RevenueOfficeModal';
@@ -43,7 +42,7 @@ const getConfidenceBadge = (score) => {
 
 const ConflictsPage = () => {
   const navigate = useNavigate();
-  const { setSelectedPlotId, language } = useDashboard();
+  const { setSelectedPlotId, language, geoData } = useDashboard();
 
   const [sortKey, setSortKey] = useState('confidence_score');
   const [sortDir, setSortDir] = useState('desc');
@@ -52,8 +51,8 @@ const ConflictsPage = () => {
   const [activeModalConflict, setActiveModalConflict] = useState(null);
 
   const rawConflicts = useMemo(() => {
-    return conflictsGeoJSON.features.map((f) => f.properties);
-  }, []);
+    return (geoData.conflicts?.features || []).map((f) => f.properties);
+  }, [geoData.conflicts]);
 
   const filteredConflicts = useMemo(() => {
     let list = rawConflicts;

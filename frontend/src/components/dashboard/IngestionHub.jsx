@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Upload, Package, FileText, Loader2, Zap } from 'lucide-react';
-import { simulateIngestion, simulateConflictEngine } from '../../data/mockIngestion';
+import { API_BASE_URL } from '../../config/api';
 import Toast from './Toast';
 
 /**
@@ -42,10 +42,16 @@ const IngestionHub = ({ onIngestSuccess }) => {
     if (!file) return;
     setLoading(true);
     try {
-      const result = await simulateIngestion(
-        mode === 'batch' ? 'Batch' : selectedLayer,
-        file
-      );
+      const formData = new FormData();
+      formData.append('layer_type', mode === 'batch' ? 'Batch' : selectedLayer);
+      formData.append('file', file);
+      const res = await fetch(`${API_BASE_URL}/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.detail || 'Upload failed');
+
       setToast({ message: result.summary, type: 'success' });
       setFile(null);
       onIngestSuccess?.();
@@ -59,9 +65,12 @@ const IngestionHub = ({ onIngestSuccess }) => {
   const handleRunEngine = useCallback(async () => {
     setEngineLoading(true);
     try {
-      const result = await simulateConflictEngine();
+      const res = await fetch(`${API_BASE_URL}/run-conflict-engine`, { method: 'POST' });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.detail || 'Engine failed');
+      
       setToast({ message: result.message, type: 'success' });
-    } catch {
+    } catch (err) {
       setToast({ message: 'Engine failed unexpectedly.', type: 'error' });
     } finally {
       setEngineLoading(false);

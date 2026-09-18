@@ -1,28 +1,23 @@
+import { API_BASE_URL } from '../config/api';
+
 /**
- * mockIngestion.js
- * ----------------
- * Connected to live backend endpoints.
+ * Triggers the file upload endpoint on the FastAPI backend.
  */
+export async function simulateIngestion(mode, file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("layer_type", mode);
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-
-export function simulateIngestion(mode, file) {
-  // Retaining the UI simulation for ingestion parsing as full 
-  // zip/shapefile parsing requires building an extensive FastAPI ingestion route.
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const ext = file.name.split('.').pop().toLowerCase();
-      const unsupported = ['exe', 'pdf', 'docx', 'pptx', 'jpg', 'png'];
-      if (unsupported.includes(ext)) {
-        reject(`Unsupported file format: .${ext}. Expected geospatial data files.`);
-        return;
-      }
-      resolve({
-        summary: `Data uploaded and queued for processing!`,
-        count: 1,
-      });
-    }, 1500);
+  const response = await fetch(`${API_BASE_URL}/upload`, {
+    method: "POST",
+    body: formData,
   });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || "Upload failed");
+  }
+  return await response.json();
 }
 
 /**
@@ -30,7 +25,7 @@ export function simulateIngestion(mode, file) {
  */
 export async function simulateConflictEngine() {
   try {
-    const response = await fetch(`${API_BASE}/run-conflict-engine`, {
+    const response = await fetch(`${API_BASE_URL}/run-conflict-engine`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     });

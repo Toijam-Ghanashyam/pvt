@@ -9,68 +9,30 @@ import PlotInspectionPanel from '../components/dashboard/PlotInspectionPanel';
 import ConflictsTable from '../components/dashboard/ConflictsTable';
 import IngestionHub from '../components/dashboard/IngestionHub';
 import Toast from '../components/dashboard/Toast';
-import { computeKPIs, topologyMetrics, plotsGeoJSON } from '../data/mockData';
+import { useDashboard } from '../context/DashboardContext';
 
 /**
  * Dashboard — Main operational dashboard page.
  * Orchestrates all dashboard components and manages shared state.
  */
 const Dashboard = () => {
-  /* ── State ────────────────────────────────────────────────────────── */
-
-  // Layer visibility toggles (all checked by default, mirrors app.py sidebar)
-  const [layers, setLayers] = useState({
-    plots: true,
-    buildings: true,
-    conflicts: true,
-    municipal: true,
-    utilities: true,
-    gt: true,
-    gnss: true,
-  });
-
-  // Selected plot (for inspection panel)
-  const [selectedPlotId, setSelectedPlotId] = useState(null);
-
-  // Sidebar drawer (mobile only)
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Conflict engine loading state
-  const [engineRunning, setEngineRunning] = useState(false);
-
-  // Global toast notification for dashboard actions
-  const [toast, setToast] = useState(null);
-
-  /* ── Handlers ─────────────────────────────────────────────────────── */
-
-  const handleToggleLayer = useCallback((layerKey) => {
-    setLayers((prev) => ({ ...prev, [layerKey]: !prev[layerKey] }));
-  }, []);
-
-  const handlePlotClick = useCallback((plotId) => {
-    setSelectedPlotId(plotId);
-  }, []);
-
-  const handleRerunEngine = useCallback(() => {
-    setEngineRunning(true);
-    setTimeout(() => {
-      setEngineRunning(false);
-      setToast({
-        message: 'Spatial Conflict Engine executed successfully — 8 active conflicts analyzed.',
-        type: 'success',
-      });
-    }, 2000);
-  }, []);
-
-  /* ── Computed values ──────────────────────────────────────────────── */
-
-  const kpis = computeKPIs();
-  const repaired = topologyMetrics.find(
-    (m) => m.metric_name === 'Self-Intersecting Polygons Repaired'
-  )?.metric_value || 0;
-  const snapped = topologyMetrics.find(
-    (m) => m.metric_name === 'Building Edges Snapped to Boundaries'
-  )?.metric_value || 0;
+  const {
+    layers,
+    handleToggleLayer,
+    selectedPlotId,
+    setSelectedPlotId,
+    handlePlotClick,
+    sidebarOpen,
+    setSidebarOpen,
+    engineRunning,
+    handleRerunEngine,
+    toast,
+    setToast,
+    kpis,
+    repaired,
+    snapped,
+    plotsCount,
+  } = useDashboard();
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col text-slate-800 dark:text-slate-100 transition-colors duration-200">
@@ -82,7 +44,7 @@ const Dashboard = () => {
         <div className="max-w-[1920px] mx-auto">
           <KpiRow kpis={kpis} />
           <TopologyRow
-            plotsCount={plotsGeoJSON.features.length}
+            plotsCount={plotsCount}
             repaired={repaired}
             snapped={snapped}
           />

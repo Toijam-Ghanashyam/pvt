@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -13,16 +13,23 @@ import AnimatedCounter from '../../components/common/AnimatedCounter';
 
 const RecordsPage = () => {
   const navigate = useNavigate();
-  const { setSelectedPlotId, language, geoData } = useDashboard();
+  const { setSelectedPlotId, language } = useDashboard();
 
+  const [revenueRecords, setRevenueRecords] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [taxFilter, setTaxFilter] = useState('ALL');
   const [discrepancyOnly, setDiscrepancyOnly] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
 
-  // Filtered & Searched records
+  useEffect(() => {
+    fetch('http://localhost:8000/api/v1/revenue-records')
+      .then((res) => res.json())
+      .then((data) => setRevenueRecords(data))
+      .catch((err) => console.error("Error fetching revenue records:", err));
+  }, []);
+
   const filteredRecords = useMemo(() => {
-    return (geoData.revenue || []).filter((r) => {
+    return revenueRecords.filter((r) => {
       const matchesSearch =
         r.plot_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.owner_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -34,11 +41,10 @@ const RecordsPage = () => {
 
       return matchesSearch && matchesTax && matchesDiscrepancy;
     });
-  }, [searchQuery, taxFilter, discrepancyOnly]);
+  }, [revenueRecords, searchQuery, taxFilter, discrepancyOnly]);
 
-  // Aggregate stats
-  const totalRegistered = (geoData.revenue || []).reduce((s, r) => s + r.registered_area_sqm, 0);
-  const totalGis = (geoData.revenue || []).reduce((s, r) => s + r.gis_area_sqm, 0);
+  const totalRegistered = revenueRecords.reduce((s, r) => s + r.registered_area_sqm, 0);
+  const totalGis = revenueRecords.reduce((s, r) => s + r.gis_area_sqm, 0);
   const totalDiscrepancy = Math.abs(totalRegistered - totalGis);
 
   const handleInspectOnMap = (plotId) => {
@@ -77,7 +83,6 @@ const RecordsPage = () => {
 
   return (
     <div className="flex-1 w-full max-w-[1920px] mx-auto p-3 sm:p-6 space-y-5">
-      {/* Header Banner */}
       <div className="bg-white dark:bg-[#0c1829] border border-slate-300 dark:border-slate-800 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
@@ -103,7 +108,6 @@ const RecordsPage = () => {
         </div>
       </div>
 
-      {/* Summary Stat Strip */}
       <AnimateOnScroll className="grid grid-cols-1 sm:grid-cols-3 gap-4" staggerChildren={0.1}>
         <div className="gov-box p-4 border-l-4 border-l-blue-600 dark:border-l-blue-500 shadow-sm bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
           <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -133,7 +137,6 @@ const RecordsPage = () => {
         </div>
       </AnimateOnScroll>
 
-      {/* Filter & Search Bar */}
       <div className="gov-box p-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-900">
         <div className="flex-1 flex items-center gap-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5">
           <Search size={15} className="text-slate-400 shrink-0" />
@@ -152,7 +155,6 @@ const RecordsPage = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          {/* Tax Status Filter */}
           <div className="flex items-center border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800">
             <span className="px-2 py-1 text-[11px] font-bold text-slate-500 uppercase bg-slate-100 dark:bg-slate-700 border-r border-slate-300 dark:border-slate-600">
               Tax
@@ -161,18 +163,16 @@ const RecordsPage = () => {
               <button
                 key={status}
                 onClick={() => setTaxFilter(status)}
-                className={`px-2 py-1 text-[11px] font-semibold transition-all duration-200 hover:scale-[1.03] ${
-                  taxFilter === status
+                className={`px-2 py-1 text-[11px] font-semibold transition-all duration-200 hover:scale-[1.03] ${taxFilter === status
                     ? 'bg-gov-navy text-white shadow-sm'
                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                }`}
+                  }`}
               >
                 {status}
               </button>
             ))}
           </div>
 
-          {/* Area Discrepancy Toggle */}
           <label className="flex items-center gap-1.5 px-2.5 py-1 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer select-none text-[11px] font-medium text-slate-700 dark:text-slate-300">
             <input
               type="checkbox"
@@ -185,11 +185,10 @@ const RecordsPage = () => {
         </div>
       </div>
 
-      {/* Cadastral Records Table */}
       <div className="gov-box overflow-x-auto">
         <div className="p-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-            Showing {filteredRecords.length} of {(geoData.revenue || []).length} Cadastral Parcels
+            Showing {filteredRecords.length} of {revenueRecords.length} Cadastral Parcels
           </span>
           <span className="text-[11px] text-slate-500 font-mono">
             District: Lucknow · Sub-Division: Sadar
@@ -222,61 +221,45 @@ const RecordsPage = () => {
                 const isSignificant = discrepancy > 10;
 
                 return (
-                  <motion.tr 
+                  <motion.tr
                     key={record.plot_id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: 0.05 * (filteredRecords.indexOf(record) % 15) }}
                     className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
                   >
-                    {/* Plot ID */}
                     <td className="p-2.5 font-mono font-bold text-blue-700 dark:text-blue-400 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                       {record.plot_id}
                     </td>
-
-                    {/* Legal Owner */}
                     <td className="p-2.5 font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                       {record.owner_name}
                     </td>
-
-                    {/* Tax ID */}
                     <td className="p-2.5 font-mono text-[11px] text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                       {record.tax_id}
                     </td>
-
-                    {/* Tax Status */}
                     <td className="p-2.5 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-lg uppercase tracking-wider ${
-                          record.tax_status === 'Paid'
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-lg uppercase tracking-wider ${record.tax_status === 'Paid'
                             ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                             : record.tax_status === 'Pending'
-                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
-                            : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300 border border-red-200 dark:border-red-800'
-                        }`}
+                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                              : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300 border border-red-200 dark:border-red-800'
+                          }`}
                       >
                         {record.tax_status}
                       </span>
                     </td>
-
-                    {/* Registered Area */}
                     <td className="p-2.5 font-mono text-right text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                       {record.registered_area_sqm} m²
                     </td>
-
-                    {/* GIS Area */}
                     <td className="p-2.5 font-mono text-right text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                       {record.gis_area_sqm} m²
                     </td>
-
-                    {/* Discrepancy */}
                     <td className="p-2.5 font-mono text-right border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                       <span className={isSignificant ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-600 dark:text-slate-400'}>
                         {discrepancy > 0 ? `±${discrepancy} m²` : '0 m²'}
                       </span>
                     </td>
-
-                    {/* Actions */}
                     <td className="p-2.5 text-center whitespace-nowrap space-x-1.5">
                       <button
                         onClick={() => handleInspectOnMap(record.plot_id)}

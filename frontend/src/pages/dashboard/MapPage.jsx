@@ -4,28 +4,6 @@ import { useDashboard } from '../../context/DashboardContext';
 import MapTabs from '../../components/dashboard/MapTabs';
 import PlotInspectionPanel from '../../components/dashboard/PlotInspectionPanel';
 
-const LAYER_GROUPS = [
-  {
-    title: 'Cadastral & AI Features',
-    titleHi: 'कडस्ट्रल एवं एआई परतें',
-    items: [
-      { key: 'plots', label: 'Cadastral Plots (Parcels)', labelHi: 'कडस्ट्रल भू-खण्ड (खसरा)', color: '#3b82f6', count: 10 },
-      { key: 'buildings', label: 'AI Detected Footprints', labelHi: 'एआई निर्मित भवन सीमाएं', color: '#22c55e', count: 48 },
-      { key: 'conflicts', label: 'Flagged Spatial Encroachments', labelHi: 'स्थानिक अतिक्रमण / संघर्ष', color: '#ef4444', count: 8, alert: true },
-    ],
-  },
-  {
-    title: 'Multi-Department Layers',
-    titleHi: 'बहु-विभागीय एकीकृत परतें',
-    items: [
-      { key: 'municipal', label: 'Municipal Master Plan Zoning', labelHi: 'नगर निगम मास्टर प्लान ज़ोन', color: '#a855f7', count: 4 },
-      { key: 'utilities', label: 'Underground / Overhead Utilities', labelHi: 'उपयोगिता लाइनें (जल/विद्युत)', color: '#06b6d4', count: 5 },
-      { key: 'gt', label: 'Ground Truthing Survey Points', labelHi: 'धरातलीय सत्यापन बिंदु (GT)', color: '#f97316', count: 10 },
-      { key: 'gnss', label: 'GNSS / CORS Base Stations', labelHi: 'जीएनएसएस / कॉर्स स्टेशन', color: '#3b82f6', count: 5 },
-    ],
-  },
-];
-
 const MapPage = () => {
   const {
     layers,
@@ -36,11 +14,44 @@ const MapPage = () => {
     language,
     sidebarOpen,
     setSidebarOpen,
+    geoData,
   } = useDashboard();
 
   const [inspectorOpen, setInspectorOpen] = useState(true);
 
-  // Quick select all / clear all
+  // Derive layer counts from live geoData instead of a separate API call
+  const layerCounts = {
+    plots: geoData.plots?.features?.length || 0,
+    buildings: geoData.buildings?.features?.length || 0,
+    conflicts: geoData.conflicts?.features?.length || 0,
+    municipal: geoData.municipal?.features?.length || 0,
+    utilities: geoData.utilities?.features?.length || 0,
+    gt: geoData.gt?.features?.length || 0,
+    gnss: geoData.gnss?.features?.length || 0,
+  };
+
+  const LAYER_GROUPS = [
+    {
+      title: 'Cadastral & AI Features',
+      titleHi: 'कडस्ट्रल एवं एआई परतें',
+      items: [
+        { key: 'plots', label: 'Cadastral Plots (Parcels)', labelHi: 'कडस्ट्रल भू-खण्ड (खसरा)', color: '#3b82f6', count: layerCounts.plots },
+        { key: 'buildings', label: 'AI Detected Footprints', labelHi: 'एआई निर्मित भवन सीमाएं', color: '#22c55e', count: layerCounts.buildings },
+        { key: 'conflicts', label: 'Flagged Spatial Encroachments', labelHi: 'स्थानिक अतिक्रमण / संघर्ष', color: '#ef4444', count: layerCounts.conflicts, alert: true },
+      ],
+    },
+    {
+      title: 'Multi-Department Layers',
+      titleHi: 'बहु-विभागीय एकीकृत परतें',
+      items: [
+        { key: 'municipal', label: 'Municipal Master Plan Zoning', labelHi: 'नगर निगम मास्टर प्लान ज़ोन', color: '#a855f7', count: layerCounts.municipal },
+        { key: 'utilities', label: 'Underground / Overhead Utilities', labelHi: 'उपयोगिता लाइनें (जल/विद्युत)', color: '#06b6d4', count: layerCounts.utilities },
+        { key: 'gt', label: 'Ground Truthing Survey Points', labelHi: 'धरातलीय सत्यापन बिंदु (GT)', color: '#f97316', count: layerCounts.gt },
+        { key: 'gnss', label: 'GNSS / CORS Base Stations', labelHi: 'जीएनएसएस / कॉर्स स्टेशन', color: '#3b82f6', count: layerCounts.gnss },
+      ],
+    },
+  ];
+
   const handleToggleAll = (enable) => {
     Object.keys(layers).forEach((key) => {
       if (layers[key] !== enable) {
@@ -53,10 +64,8 @@ const MapPage = () => {
 
   return (
     <div className="flex-1 flex flex-col w-full h-[calc(100vh-80px)] min-h-[680px] bg-[#f0f2f5] dark:bg-[#070e17] overflow-hidden">
-      {/* Compact floating control strip — inside map area */}
       <div className="bg-white/90 dark:bg-[#0c1829]/90 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-700/40 px-3 sm:px-5 py-1.5 flex items-center justify-between gap-2 select-none shrink-0">
         <div className="flex items-center gap-2">
-          {/* Mobile layer drawer trigger */}
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-700 dark:text-slate-200"
@@ -92,11 +101,8 @@ const MapPage = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Sidebar + Map Viewport + Right Inspector Drawer */}
       <div className="flex-1 flex w-full relative overflow-hidden">
-        {/* Desktop Utilitarian Layer Sidebar */}
         <aside className="hidden lg:flex flex-col w-72 shrink-0 bg-white dark:bg-[#0c1829] border-r border-slate-300 dark:border-slate-800 select-none overflow-y-auto z-10 shadow-sm">
-          {/* Sidebar Header */}
           <div className="p-3 bg-slate-100 dark:bg-slate-800/80 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Layers size={15} className="text-gov-navy dark:text-teal-400" />
@@ -109,7 +115,6 @@ const MapPage = () => {
             </span>
           </div>
 
-          {/* Quick Select Buttons */}
           <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px]">
             <button
               onClick={() => handleToggleAll(true)}
@@ -126,7 +131,6 @@ const MapPage = () => {
             </button>
           </div>
 
-          {/* Layer Checkboxes */}
           <div className="p-3 space-y-4 flex-1">
             {LAYER_GROUPS.map((group) => (
               <div key={group.title} className="border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-2.5">
@@ -139,11 +143,10 @@ const MapPage = () => {
                     return (
                       <label
                         key={item.key}
-                        className={`flex items-center justify-between gap-2 p-1.5 cursor-pointer border transition-colors text-xs select-none ${
-                          isChecked
+                        className={`flex items-center justify-between gap-2 p-1.5 cursor-pointer border transition-colors text-xs select-none ${isChecked
                             ? 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 shadow-[0_1px_1px_rgba(0,0,0,0.04)]'
                             : 'bg-transparent border-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/40'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           <input
@@ -160,11 +163,10 @@ const MapPage = () => {
                             {language === 'hi' ? item.labelHi : item.label}
                           </span>
                         </div>
-                        <span className={`text-[9px] font-mono px-1 border shrink-0 ${
-                          item.alert
+                        <span className={`text-[9px] font-mono px-1 border shrink-0 ${item.alert
                             ? 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 border-red-300 font-bold'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                        }`}>
+                          }`}>
                           {item.count}
                         </span>
                       </label>
@@ -175,7 +177,6 @@ const MapPage = () => {
             ))}
           </div>
 
-          {/* Quick Helper Notes */}
           <div className="p-3 bg-slate-100 dark:bg-slate-900 border-t border-slate-300 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
             <p className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
               <Info size={13} className="text-blue-600" />
@@ -189,7 +190,6 @@ const MapPage = () => {
           </div>
         </aside>
 
-        {/* Mobile Sidebar Drawer */}
         {sidebarOpen && (
           <div className="fixed inset-0 z-[2000] lg:hidden">
             <div
@@ -231,7 +231,6 @@ const MapPage = () => {
           </div>
         )}
 
-        {/* Center: Full-height Map Workspace */}
         <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-100 dark:bg-slate-950 relative">
           <MapTabs
             mapProps={{
@@ -245,10 +244,8 @@ const MapPage = () => {
           />
         </main>
 
-        {/* Right Docked Plot Inspection Dossier (Slides in when plot selected) */}
         {selectedPlotId && inspectorOpen && (
           <aside className="w-80 sm:w-96 shrink-0 bg-white dark:bg-[#0c1829] border-l-2 border-slate-300 dark:border-slate-800 flex flex-col shadow-lg z-10 transition-all">
-            {/* Inspector Header */}
             <div className="p-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between select-none">
               <div className="flex items-center gap-2">
                 <FileText size={15} className="text-gov-navy dark:text-teal-400" />
@@ -265,7 +262,6 @@ const MapPage = () => {
               </button>
             </div>
 
-            {/* Inspector Content */}
             <div className="flex-1 overflow-y-auto p-3">
               <PlotInspectionPanel selectedPlotId={selectedPlotId} />
             </div>

@@ -42,7 +42,7 @@ def get_db_connection():
     port = os.getenv("DB_PORT", "5432")
     dbname = os.getenv("DB_NAME", "postgres")
     user = os.getenv("DB_USER", "postgres")
-    password = os.getenv("DB_PASS", "")
+    password = os.getenv("DB_PASS", "Luwang2006@")
 
     conn = None
     try:

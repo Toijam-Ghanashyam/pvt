@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   UploadCloud,
   Package,
@@ -18,17 +18,17 @@ import IngestionHub from '../../components/dashboard/IngestionHub';
 import { useDashboard } from '../../context/DashboardContext';
 import AnimateOnScroll from '../../components/common/AnimateOnScroll';
 
-const AUDIT_LOGS = [
-  { id: 'ING-2026-009', layer: 'Drone Orthomosaic (TIF/COG)', size: '248.4 MB', records: '48 Structures', source: 'DJI Matrice 300 RTK Survey', time: '16-Sep-2026 09:15', status: 'Synthesized', checksum: 'a8f3b92c...e41d' },
-  { id: 'ING-2026-008', layer: 'Cadastral Parcel Shapefile', size: '14.2 MB', records: '10 Parcels', source: 'Tehsil Sadar RoR PostGIS', time: '15-Sep-2026 14:30', status: 'Validated', checksum: '71c890de...88b2' },
-  { id: 'ING-2026-007', layer: 'Municipal Master Plan 2031', size: '38.6 MB', records: '4 Master Zones', source: 'Lucknow Development Authority (LDA)', time: '12-Sep-2026 11:00', status: 'Harmonized', checksum: '9e334a1b...290f' },
-  { id: 'ING-2026-006', layer: 'Underground Utilities (GIS)', size: '8.9 MB', records: '5 Pipeline Traces', source: 'Jal Sansthan & UPPCL GIS', time: '10-Sep-2026 16:45', status: 'Harmonized', checksum: '4d12bb56...a014' },
-  { id: 'ING-2026-005', layer: 'GNSS / CORS RINEX Logs', size: '1.8 MB', records: '5 CORS Bases', source: 'Survey of India Geodetic Network', time: '08-Sep-2026 08:00', status: 'Active Sync', checksum: 'c0199e4f...315a' },
-];
-
 const IngestionPage = () => {
   const { language, setToast } = useDashboard();
   const [stacSyncing, setStacSyncing] = useState(false);
+  const [auditLogs, setAuditLogs] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:8000/api/v1/audit-logs')
+      .then(res => res.json())
+      .then(data => setAuditLogs(data))
+      .catch(err => console.error("Failed to load audit logs", err));
+  }, []);
 
   const handleSyncSTAC = () => {
     setStacSyncing(true);
@@ -43,7 +43,6 @@ const IngestionPage = () => {
 
   return (
     <div className="flex-1 w-full max-w-[1920px] mx-auto p-3 sm:p-6 space-y-6">
-      {/* Page Header */}
       <div className="bg-white dark:bg-[#0c1829] border border-slate-300 dark:border-slate-800 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
@@ -71,7 +70,6 @@ const IngestionPage = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Upload Console */}
         <AnimateOnScroll className="lg:col-span-1 space-y-4" staggerChildren={0.1}>
           <div className="gov-box p-4 bg-white/80 dark:bg-[#0c1829]/80 backdrop-blur-sm shadow-sm border border-slate-200/60 dark:border-slate-700/50">
             <div className="border-b border-slate-300 dark:border-slate-800 pb-2 mb-4">
@@ -94,7 +92,6 @@ const IngestionPage = () => {
             />
           </div>
 
-          {/* Supported Format Specifications */}
           <div className="gov-box p-4 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm text-xs text-slate-600 dark:text-slate-400 space-y-2 border border-slate-200/60 dark:border-slate-700/50">
             <h3 className="font-bold text-slate-800 dark:text-slate-200 uppercase text-[11px]">
               DoLR Ingestion Specifications (PS26013)
@@ -108,9 +105,7 @@ const IngestionPage = () => {
           </div>
         </AnimateOnScroll>
 
-        {/* Right Column: Ingestion Log & Provenance Audit */}
         <AnimateOnScroll className="lg:col-span-2 space-y-4" staggerChildren={0.1} delay={0.2}>
-          {/* Provenance Audit Table */}
           <div className="gov-box shadow-sm border border-slate-200/60 dark:border-slate-700/50 overflow-hidden">
             <div className="p-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -120,7 +115,7 @@ const IngestionPage = () => {
                 </h2>
               </div>
               <span className="text-[11px] font-mono text-slate-500">
-                5 Historical Feeds Logged
+                {auditLogs.length} Historical Feeds Logged
               </span>
             </div>
 
@@ -137,12 +132,12 @@ const IngestionPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                  {AUDIT_LOGS.map((log) => (
-                    <motion.tr 
-                      key={log.id}
+                  {auditLogs.map((log, index) => (
+                    <motion.tr
+                      key={log.id || index}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.05 * AUDIT_LOGS.indexOf(log) }}
+                      transition={{ duration: 0.3, delay: 0.05 * index }}
                       className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                     >
                       <td className="p-2.5 font-mono font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
@@ -168,12 +163,14 @@ const IngestionPage = () => {
                       </td>
                     </motion.tr>
                   ))}
+                  {auditLogs.length === 0 && (
+                    <tr><td colSpan={6} className="p-4 text-center text-slate-500">No logs found. Waiting for ingestion API connection.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* STAC Catalog Live Node Status */}
           <div className="gov-box p-4 bg-white/80 dark:bg-[#0c1829]/80 backdrop-blur-sm shadow-sm space-y-3 border border-slate-200/60 dark:border-slate-700/50">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
               <div className="flex items-center gap-2">

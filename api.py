@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 import geopandas as gpd
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL
 from shapely.geometry import shape
 
@@ -29,6 +29,55 @@ app = FastAPI(
     description="Inter-departmental REST API for land governance, cadastral data, and AI conflict detection.",
     version="1.0.0"
 )
+@app.get("/api/v1/ai-buildings")
+def get_ai_buildings():
+    engine = get_engine()
+    try:
+        gdf = gpd.read_postgis("SELECT * FROM ai_buildings", engine, geom_col="geom")
+        if gdf.crs is not None and gdf.crs.to_epsg() != 4326:
+            gdf = gdf.to_crs(epsg=4326)
+        return json.loads(gdf.to_json())
+    except Exception:
+        return {"type": "FeatureCollection", "features": []}
+
+@app.get("/api/v1/revenue-records")
+def get_all_revenue_records():
+    engine = get_engine()
+    try:
+        df = pd.read_sql("SELECT * FROM revenue_records", engine)
+        df['last_assessment_date'] = df['last_assessment_date'].astype(str)
+        return df.to_dict(orient="records")
+    except Exception:
+        return []
+
+@app.get("/api/v1/topology-metrics")
+def get_topology_metrics():
+    engine = get_engine()
+    try:
+        df = pd.read_sql("SELECT * FROM topology_metrics", engine)
+        return df.to_dict(orient="records")
+    except Exception:
+        return []
+
+@app.post("/api/v1/ingest")
+async def ingest_file(file: UploadFile = File(...)):
+    engine = get_engine()
+    contents = await file.read()
+    filename = file.filename.lower()
+    
+    if filename.endswith(".geojson"):
+        gdf = gpd.read_file(io.BytesIO(contents))
+        if gdf.crs and gdf.crs.to_epsg() != 4326:
+            gdf = gdf.to_crs(epsg=4326)
+        gdf = gdf.rename_geometry("geom")
+        
+        if "plot" in filename:
+            gdf.to_postgis("cadastral_plots", engine, if_exists="append", index=False)
+        else:
+            gdf.to_postgis("ai_buildings", engine, if_exists="append", index=False)
+            
+    detect_encroachments()
+    return {"status": "success", "message": f"Successfully ingested {file.filename}"}
 @app.post("/api/v1/upload")
 async def upload_file(layer_type: str = Form(...), file: UploadFile = File(...)):
     engine = get_engine()
@@ -182,6 +231,22 @@ async def upload_file(layer_type: str = Form(...), file: UploadFile = File(...))
                 finally:
                     os.remove(tmp_path)
                     
+        # Write an audit log entry for this ingestion
+        if ingested_summary:
+            try:
+                import datetime
+                audit_df = pd.DataFrame([{
+                    "layer_type": layer_type,
+                    "file_size": f"{len(content) / 1024:.1f} KB",
+                    "source_agency": "DoLR Upload",
+                    "ingested_at": datetime.datetime.utcnow().isoformat(),
+                    "status": "INGESTED",
+                    "summary": ", ".join(ingested_summary),
+                }])
+                audit_df.to_sql("ingestion_audit_log", engine, if_exists="append", index=False)
+            except Exception:
+                pass  # Audit logging is non-critical
+
         return {"status": "success", "summary": ", ".join(ingested_summary)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -398,3 +463,49 @@ def download_inspection_notice(
         return Response(content=pdf_bytes, media_type="application/pdf")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# 4. Layer counts endpoint — used by MapPage.jsx sidebar
+@app.get("/api/v1/layer-counts")
+def get_layer_counts():
+    engine = get_engine()
+    counts = {}
+    table_map = {
+        "plots": ("cadastral_plots", None),
+        "buildings": ("ai_buildings", None),
+        "conflicts": ("spatial_conflicts", None),
+        "municipal": ("municipal_layers", None),
+        "utilities": ("utility_lines", None),
+        "gt": ("gt_surveys", None),
+        "gnss": ("gnss_cors", None),
+    }
+    for key, (table, _) in table_map.items():
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(text(f"SELECT COUNT(*) FROM {table}")).scalar()
+            counts[key] = int(result)
+        except Exception:
+            counts[key] = 0
+    return counts
+
+
+# 5. Audit logs endpoint — used by IngestionPage.jsx
+@app.get("/api/v1/audit-logs")
+def get_audit_logs():
+    engine = get_engine()
+    try:
+        df = pd.read_sql("SELECT * FROM ingestion_audit_log ORDER BY ingested_at DESC LIMIT 50", engine)
+        # Normalize column names for the frontend
+        records = []
+        for _, row in df.iterrows():
+            records.append({
+                "id": str(row.get("id", "")),
+                "layer": str(row.get("layer_type", row.get("layer", ""))),
+                "size": str(row.get("file_size", row.get("size", "N/A"))),
+                "source": str(row.get("source_agency", row.get("source", "DoLR"))),
+                "time": str(row.get("ingested_at", row.get("time", ""))),
+                "status": str(row.get("status", "INGESTED")),
+            })
+        return records
+    except Exception:
+        return []

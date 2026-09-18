@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ExternalLink,
@@ -42,17 +42,25 @@ const getConfidenceBadge = (score) => {
 
 const ConflictsPage = () => {
   const navigate = useNavigate();
-  const { setSelectedPlotId, language, geoData } = useDashboard();
+  const { setSelectedPlotId, language } = useDashboard();
 
+  const [rawConflicts, setRawConflicts] = useState([]);
   const [sortKey, setSortKey] = useState('confidence_score');
   const [sortDir, setSortDir] = useState('desc');
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [modalOpen, setModalOpen] = useState(false);
   const [activeModalConflict, setActiveModalConflict] = useState(null);
 
-  const rawConflicts = useMemo(() => {
-    return (geoData.conflicts?.features || []).map((f) => f.properties);
-  }, [geoData.conflicts]);
+  useEffect(() => {
+    fetch('http://localhost:8000/api/v1/conflicts')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.features) {
+          setRawConflicts(data.features.map((f) => f.properties));
+        }
+      })
+      .catch((err) => console.error("Error fetching conflicts:", err));
+  }, []);
 
   const filteredConflicts = useMemo(() => {
     let list = rawConflicts;
@@ -108,7 +116,6 @@ const ConflictsPage = () => {
 
   return (
     <div className="flex-1 w-full max-w-[1920px] mx-auto p-3 sm:p-6 space-y-5">
-      {/* Header Banner */}
       <div className="bg-white dark:bg-[#0c1829] border border-slate-300 dark:border-slate-800 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
@@ -134,7 +141,6 @@ const ConflictsPage = () => {
         </div>
       </div>
 
-      {/* Threshold Information Alert */}
       <AnimateOnScroll>
         <div className="bg-amber-50/80 dark:bg-amber-950/30 border-l-4 border-l-amber-500 border border-amber-200/60 dark:border-amber-800/50 p-3 sm:p-4 text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg shadow-sm">
           <div className="flex items-start gap-2.5">
@@ -157,7 +163,6 @@ const ConflictsPage = () => {
         </div>
       </AnimateOnScroll>
 
-      {/* Filter Tabs */}
       <div className="gov-box p-2.5 flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900">
         <div className="flex items-center gap-1">
           {[
@@ -169,11 +174,10 @@ const ConflictsPage = () => {
             <button
               key={tab.id}
               onClick={() => setActiveFilter(tab.id)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${
-                activeFilter === tab.id
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${activeFilter === tab.id
                   ? 'bg-gov-navy text-white border-gov-navy shadow-sm'
                   : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -185,7 +189,6 @@ const ConflictsPage = () => {
         </span>
       </div>
 
-      {/* Conflicts Table */}
       <div className="gov-box overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
@@ -217,36 +220,27 @@ const ConflictsPage = () => {
               const isReviewRequired = c.confidence_score < 78;
 
               return (
-                <motion.tr 
+                <motion.tr
                   key={c.conflict_id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: 0.05 * (filteredConflicts.indexOf(c) % 15) }}
                   className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
                 >
-                  {/* Plot ID */}
                   <td className="p-2.5 font-mono font-bold text-blue-700 dark:text-blue-400 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                     {c.plot_id}
                   </td>
-
-                  {/* Conflict Type */}
                   <td className="p-2.5 font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                     {c.conflict_type}
                   </td>
-
-                  {/* IoU % Overlap */}
                   <td className="p-2.5 font-mono font-bold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                     {c.iou}%
                   </td>
-
-                  {/* Confidence Score */}
                   <td className="p-2.5 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-lg uppercase tracking-wider border ${badge.bg} ${badge.fg} ${badge.border}`}>
                       {c.confidence_score}% — {badge.text}
                     </span>
                   </td>
-
-                  {/* Adjudication Status */}
                   <td className="p-2.5 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
                     {isReviewRequired ? (
                       <button
@@ -267,8 +261,6 @@ const ConflictsPage = () => {
                       </span>
                     )}
                   </td>
-
-                  {/* Actions */}
                   <td className="p-2.5 text-center whitespace-nowrap space-x-1.5">
                     <button
                       onClick={() => handleInspectOnMap(c.plot_id)}
@@ -297,7 +289,6 @@ const ConflictsPage = () => {
         </table>
       </div>
 
-      {/* Nayab Tehsildar Jurisdictional Land Revenue Modal */}
       <RevenueOfficeModal
         isOpen={modalOpen}
         onClose={() => {

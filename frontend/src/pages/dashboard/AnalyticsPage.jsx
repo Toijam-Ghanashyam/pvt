@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
   TrendingUp,
   Building2,
@@ -14,21 +15,37 @@ import AnimateOnScroll from '../../components/common/AnimateOnScroll';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 
 const AnalyticsPage = () => {
-  const { kpis, repaired, snapped, plotsCount, language, geoData } = useDashboard();
+  const { language } = useDashboard();
+
+  const [metrics, setMetrics] = useState({
+    kpis: { totalAreaHectares: 0, totalBuildings: 0, encroachments: 0, accuracyRate: 0 },
+    topology: { repaired: 0, snapped: 0, plotsCount: 0 },
+    counts: { plots: 0, buildings: 0, conflicts: 0, municipal: 4, utilities: 5, gt: 10, gnss: 5 }
+  });
+
+  useEffect(() => {
+    fetch('http://localhost:8000/api/v1/topology-metrics')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.counts) {
+          setMetrics(data);
+        }
+      })
+      .catch((err) => console.error("Error fetching analytics:", err));
+  }, []);
 
   const datasetStats = [
-    { name: 'Cadastral Revenue Plots', nameHi: 'कडस्ट्रल भू-खण्ड (खसरा)', count: geoData.plots?.features?.length || 0, unit: 'Parcels', source: 'State Land Records (RoR)', status: 'Verified' },
-    { name: 'AI Building Footprints', nameHi: 'एआई निर्मित भवन', count: geoData.buildings?.features?.length || 0, unit: 'Structures', source: 'High-Res Drone Orthomosaic', status: 'Synthesized' },
-    { name: 'Spatial Overlap Conflicts', nameHi: 'स्थानिक अतिक्रमण / विवाद', count: geoData.conflicts?.features?.length || 0, unit: 'Encroachments', source: 'Spatial Conflict Engine', status: 'Action Required', alert: true },
-    { name: 'Municipal Zoning Boundaries', nameHi: 'नगर निगम मास्टर प्लान', count: geoData.municipal?.features?.length || 0, unit: 'Zones', source: 'Lucknow Municipal Corp', status: 'Harmonized' },
-    { name: 'Utility Networks (Water/Power)', nameHi: 'उपयोगिता नेटवर्क लाइनें', count: geoData.utilities?.features?.length || 0, unit: 'Pipelines', source: 'Dept. of Urban Utilities', status: 'Harmonized' },
-    { name: 'Ground Truthing Checkpoints', nameHi: 'धरातलीय सत्यापन बिंदु', count: geoData.gt?.features?.length || 0, unit: 'Survey Points', source: 'Field Survey Team A/B/C', status: 'Calibrated' },
-    { name: 'GNSS / CORS Base Stations', nameHi: 'जीएनएसएस कॉर्स स्टेशन', count: geoData.gnss?.features?.length || 0, unit: 'Stations', source: 'Survey of India Network', status: 'Continuous Active' },
+    { name: 'Cadastral Revenue Plots', nameHi: 'कडस्ट्रल भू-खण्ड (खसरा)', count: metrics.counts.plots, unit: 'Parcels', source: 'State Land Records (RoR)', status: 'Verified' },
+    { name: 'AI Building Footprints', nameHi: 'एआई निर्मित भवन', count: metrics.counts.buildings, unit: 'Structures', source: 'High-Res Drone Orthomosaic', status: 'Synthesized' },
+    { name: 'Spatial Overlap Conflicts', nameHi: 'स्थानिक अतिक्रमण / विवाद', count: metrics.counts.conflicts, unit: 'Encroachments', source: 'Spatial Conflict Engine', status: 'Action Required', alert: true },
+    { name: 'Municipal Zoning Boundaries', nameHi: 'नगर निगम मास्टर प्लान', count: metrics.counts.municipal, unit: 'Zones', source: 'Lucknow Municipal Corp', status: 'Harmonized' },
+    { name: 'Utility Networks (Water/Power)', nameHi: 'उपयोगिता नेटवर्क लाइनें', count: metrics.counts.utilities, unit: 'Pipelines', source: 'Dept. of Urban Utilities', status: 'Harmonized' },
+    { name: 'Ground Truthing Checkpoints', nameHi: 'धरातलीय सत्यापन बिंदु', count: metrics.counts.gt, unit: 'Survey Points', source: 'Field Survey Team A/B/C', status: 'Calibrated' },
+    { name: 'GNSS / CORS Base Stations', nameHi: 'जीएनएसएस कॉर्स स्टेशन', count: metrics.counts.gnss, unit: 'Stations', source: 'Survey of India Network', status: 'Continuous Active' },
   ];
 
   return (
     <div className="flex-1 w-full max-w-[1920px] mx-auto p-3 sm:p-6 space-y-6">
-      {/* Page Header Banner */}
       <div className="bg-white dark:bg-[#0c1829] border border-slate-300 dark:border-slate-800 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
@@ -49,7 +66,6 @@ const AnalyticsPage = () => {
         </div>
       </div>
 
-      {/* 1. Executive KPI Summary Cards */}
       <section className="space-y-2">
         <div className="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-1">
           <h2 className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
@@ -59,7 +75,6 @@ const AnalyticsPage = () => {
         </div>
 
         <AnimateOnScroll className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" staggerChildren={0.08}>
-          {/* Card 1 */}
           <div className="gov-box p-4 border-l-4 border-l-gov-navy dark:border-l-teal-500">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -68,14 +83,13 @@ const AnalyticsPage = () => {
               <TrendingUp size={16} className="text-gov-navy dark:text-teal-400" />
             </div>
             <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
-              <AnimatedCounter to={parseFloat(kpis.totalAreaHectares)} duration={1800} decimals={2} /> <span className="text-sm font-sans font-semibold text-slate-500">ha</span>
+              <AnimatedCounter to={parseFloat(metrics.kpis.totalAreaHectares)} duration={1800} decimals={2} /> <span className="text-sm font-sans font-semibold text-slate-500">ha</span>
             </p>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-              10 Cadastral parcels · 12,850 m²
+              {metrics.counts.plots} Cadastral parcels · 12,850 m²
             </p>
           </div>
 
-          {/* Card 2 */}
           <div className="gov-box p-4 border-l-4 border-l-blue-600">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -84,14 +98,13 @@ const AnalyticsPage = () => {
               <Building2 size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
             <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
-              <AnimatedCounter to={kpis.totalBuildings} duration={1600} />
+              <AnimatedCounter to={metrics.kpis.totalBuildings} duration={1600} />
             </p>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               Drone orthomosaic segmentation
             </p>
           </div>
 
-          {/* Card 3 - Alert */}
           <div className="gov-box p-4 border-l-4 border-l-red-600 bg-red-50/30 dark:bg-red-950/20">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">
@@ -100,14 +113,13 @@ const AnalyticsPage = () => {
               <AlertTriangle size={16} className="text-red-600 dark:text-red-400" />
             </div>
             <p className="text-2xl sm:text-3xl font-black text-red-700 dark:text-red-400 font-mono">
-              <AnimatedCounter to={kpis.encroachments} duration={1400} />
+              <AnimatedCounter to={metrics.kpis.encroachments} duration={1400} />
             </p>
             <span className="inline-block mt-1 text-[10px] font-bold text-red-800 dark:text-red-300 bg-red-100 dark:bg-red-950 border border-red-300 dark:border-red-800 px-1.5 py-0.2">
               ⚠ Requires Field Verification
             </span>
           </div>
 
-          {/* Card 4 */}
           <div className="gov-box p-4 border-l-4 border-l-gov-green">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -116,7 +128,7 @@ const AnalyticsPage = () => {
               <Target size={16} className="text-gov-green" />
             </div>
             <p className="text-2xl sm:text-3xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
-              <AnimatedCounter to={parseFloat(kpis.accuracyRate)} duration={2000} decimals={1} suffix="%" />
+              <AnimatedCounter to={parseFloat(metrics.kpis.accuracyRate)} duration={2000} decimals={1} suffix="%" />
             </p>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               Calibrated against ground truth points
@@ -125,7 +137,6 @@ const AnalyticsPage = () => {
         </AnimateOnScroll>
       </section>
 
-      {/* 2. Automated Topology Diagnostics */}
       <section className="space-y-2">
         <div className="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-1">
           <h2 className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
@@ -144,7 +155,7 @@ const AnalyticsPage = () => {
                 Plots Processed
               </span>
             </div>
-            <p className="text-xl font-mono font-bold text-slate-800 dark:text-slate-100">{plotsCount}</p>
+            <p className="text-xl font-mono font-bold text-slate-800 dark:text-slate-100">{metrics.topology.plotsCount}</p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400">100% Boundary Closure</p>
           </div>
 
@@ -155,7 +166,7 @@ const AnalyticsPage = () => {
                 Slivers / Self-Intersects
               </span>
             </div>
-            <p className="text-xl font-mono font-bold text-slate-800 dark:text-slate-100">{repaired}</p>
+            <p className="text-xl font-mono font-bold text-slate-800 dark:text-slate-100">{metrics.topology.repaired}</p>
             <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Repaired via ST_MakeValid</p>
           </div>
 
@@ -166,7 +177,7 @@ const AnalyticsPage = () => {
                 Building Edges Snapped
               </span>
             </div>
-            <p className="text-xl font-mono font-bold text-slate-800 dark:text-slate-100">{snapped}</p>
+            <p className="text-xl font-mono font-bold text-slate-800 dark:text-slate-100">{metrics.topology.snapped}</p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400">5.0m snapping threshold</p>
           </div>
 
@@ -183,7 +194,6 @@ const AnalyticsPage = () => {
         </AnimateOnScroll>
       </section>
 
-      {/* 3. Multi-Dataset Synthesis Grid */}
       <section className="space-y-2">
         <div className="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-1">
           <h2 className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
@@ -220,11 +230,10 @@ const AnalyticsPage = () => {
                     {item.source}
                   </td>
                   <td className="p-2.5">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-lg uppercase tracking-wider ${
-                      item.alert
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-lg uppercase tracking-wider ${item.alert
                         ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300 border border-red-200 dark:border-red-800'
                         : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                    }`}>
+                      }`}>
                       {item.status}
                     </span>
                   </td>
@@ -235,7 +244,6 @@ const AnalyticsPage = () => {
         </div>
       </section>
 
-      {/* 4. Conflict Severity Breakdown */}
       <section className="space-y-2">
         <div className="border-b border-slate-300 dark:border-slate-800 pb-1">
           <h2 className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">

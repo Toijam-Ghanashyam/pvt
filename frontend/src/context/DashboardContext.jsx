@@ -42,27 +42,43 @@ export const DashboardProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    const fetchAllLayers = async () => {
+    const emptyFC = { type: 'FeatureCollection', features: [] };
+    const safeFetch = async (url, method = 'GET') => {
       try {
-        const [plots, buildings, conflicts, municipal, utilities, gt, gnss, revenue, metrics, consensusRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/cadastral-plots`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/buildings`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/conflicts`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/municipal`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/utilities`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/gt-surveys`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/gnss-cors`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/revenue`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/metrics`).then(res => res.json()),
-          fetch(`${API_BASE_URL}/consensus`, { method: 'POST' }).then(res => res.json()).catch(() => ({ results: [] }))
-        ]);
-        setGeoData({ 
-          plots, buildings, conflicts, municipal, utilities, 
-          gt, gnss, revenue, metrics, consensus: consensusRes.results || [] 
-        });
-      } catch (error) {
-        console.error("Failed to load live data:", error);
+        const res = await fetch(url, { method });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      } catch (e) {
+        console.warn(`[API] ${method} ${url} failed:`, e.message);
+        return null;
       }
+    };
+
+    const fetchAllLayers = async () => {
+      const [plots, buildings, conflicts, municipal, utilities, gt, gnss, revenue, metrics, consensusRes] = await Promise.all([
+        safeFetch(`${API_BASE_URL}/cadastral-plots`),
+        safeFetch(`${API_BASE_URL}/buildings`),
+        safeFetch(`${API_BASE_URL}/conflicts`),
+        safeFetch(`${API_BASE_URL}/municipal`),
+        safeFetch(`${API_BASE_URL}/utilities`),
+        safeFetch(`${API_BASE_URL}/gt-surveys`),
+        safeFetch(`${API_BASE_URL}/gnss-cors`),
+        safeFetch(`${API_BASE_URL}/revenue`),
+        safeFetch(`${API_BASE_URL}/metrics`),
+        safeFetch(`${API_BASE_URL}/consensus`, 'POST'),
+      ]);
+      setGeoData({
+        plots: plots || emptyFC,
+        buildings: buildings || emptyFC,
+        conflicts: conflicts || emptyFC,
+        municipal: municipal || emptyFC,
+        utilities: utilities || emptyFC,
+        gt: gt || emptyFC,
+        gnss: gnss || emptyFC,
+        revenue: Array.isArray(revenue) ? revenue : [],
+        metrics: Array.isArray(metrics) ? metrics : [],
+        consensus: consensusRes?.results || [],
+      });
     };
     fetchAllLayers();
   }, []);

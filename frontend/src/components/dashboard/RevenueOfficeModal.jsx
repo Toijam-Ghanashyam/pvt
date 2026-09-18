@@ -14,7 +14,20 @@ import {
   FileText,
   UserCheck
 } from 'lucide-react';
-import { jurisdictionalRevenueOffice } from '../../data/mockData';
+
+// Static government office data (does not need a database endpoint)
+const jurisdictionalRevenueOffice = {
+  office_name: 'Tehsil Sadar Revenue Office',
+  division: 'Sub-Division: Lucknow Sadar · Revenue Circle 4',
+  cadastral_code: 'UP-LKO-SAR-04',
+  nodal_officer: 'Shri R. K. Verma',
+  designation: 'Nayab Tehsildar (Revenue) · IAS Cadre',
+  office_hours: 'Mon–Sat: 10:00–17:00 IST',
+  phone: '+91-522-2623001',
+  email: 'tehsil.sadar.lko@up.gov.in',
+  address: 'Revenue Office Complex, Hazratganj, Lucknow – 226001, Uttar Pradesh',
+};
+
 
 /**
  * RevenueOfficeModal

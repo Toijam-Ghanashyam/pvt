@@ -31,20 +31,22 @@ const RecordsPage = () => {
   const filteredRecords = useMemo(() => {
     return revenueRecords.filter((r) => {
       const matchesSearch =
-        r.plot_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.owner_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.tax_id.toLowerCase().includes(searchQuery.toLowerCase());
+        String(r.plot_id ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(r.owner_name ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(r.tax_id ?? '').toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesTax = taxFilter === 'ALL' || r.tax_status.toUpperCase() === taxFilter;
-      const discrepancy = Math.abs(r.registered_area_sqm - r.gis_area_sqm);
+      const matchesTax = taxFilter === 'ALL' || String(r.tax_status ?? '').toUpperCase() === taxFilter;
+      const regArea = Number(r.registered_area_sqm ?? 0);
+      const gisArea = Number(r.gis_area_sqm ?? regArea);
+      const discrepancy = Math.abs(regArea - gisArea);
       const matchesDiscrepancy = !discrepancyOnly || discrepancy > 10;
 
       return matchesSearch && matchesTax && matchesDiscrepancy;
     });
   }, [revenueRecords, searchQuery, taxFilter, discrepancyOnly]);
 
-  const totalRegistered = revenueRecords.reduce((s, r) => s + r.registered_area_sqm, 0);
-  const totalGis = revenueRecords.reduce((s, r) => s + r.gis_area_sqm, 0);
+  const totalRegistered = revenueRecords.reduce((s, r) => s + Number(r.registered_area_sqm ?? 0), 0);
+  const totalGis = revenueRecords.reduce((s, r) => s + Number(r.gis_area_sqm ?? r.registered_area_sqm ?? 0), 0);
   const totalDiscrepancy = Math.abs(totalRegistered - totalGis);
 
   const handleInspectOnMap = (plotId) => {
@@ -250,15 +252,23 @@ const RecordsPage = () => {
                       </span>
                     </td>
                     <td className="p-2.5 font-mono text-right text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
-                      {record.registered_area_sqm} m²
+                      {Number(record.registered_area_sqm ?? 0).toLocaleString()} m²
                     </td>
                     <td className="p-2.5 font-mono text-right text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
-                      {record.gis_area_sqm} m²
+                      {record.gis_area_sqm != null ? `${Number(record.gis_area_sqm).toLocaleString()} m²` : <span className="text-slate-400 italic text-[10px]">Pending Survey</span>}
                     </td>
                     <td className="p-2.5 font-mono text-right border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
-                      <span className={isSignificant ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-600 dark:text-slate-400'}>
-                        {discrepancy > 0 ? `±${discrepancy} m²` : '0 m²'}
-                      </span>
+                      {(() => {
+                        const regArea = Number(record.registered_area_sqm ?? 0);
+                        const gisArea = Number(record.gis_area_sqm ?? regArea);
+                        const discrepancy = Math.abs(regArea - gisArea);
+                        const isSignificant = discrepancy > 10;
+                        return (
+                          <span className={isSignificant ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-600 dark:text-slate-400'}>
+                            {discrepancy > 0 ? `±${discrepancy.toLocaleString()} m²` : '0 m²'}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="p-2.5 text-center whitespace-nowrap space-x-1.5">
                       <button

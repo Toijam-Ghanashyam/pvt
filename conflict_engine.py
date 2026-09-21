@@ -120,7 +120,7 @@ def detect_encroachments():
                     'building_id': str(row.get('building_id', 'Unknown')),
                     'plot_id': str(row.get('plot_id', 'Unknown')),
                     'iou': round(float(iou), 4),
-                    'confidence_score': round(float(row.get('confidence_score', 0.90)), 2),
+                    'confidence_score': round((float(row.get('confidence_score', 0.90)) * 100) if float(row.get('confidence_score', 0.90)) <= 1.0 else float(row.get('confidence_score', 0.90)), 2),
                     'conflict_type': 'Cadastral Encroachment',
                     'geom': b_geom
                 })
@@ -142,7 +142,7 @@ def detect_encroachments():
                 'building_id': str(row.get('building_id', 'Unknown')),
                 'plot_id': 'N/A',
                 'iou': 0.0,
-                'confidence_score': round(float(row.get('confidence_score', 0.95)), 2),
+                'confidence_score': round((float(row.get('confidence_score', 0.95)) * 100) if float(row.get('confidence_score', 0.95)) <= 1.0 else float(row.get('confidence_score', 0.95)), 2),
                 'conflict_type': f'Utility RoW Violation ({u_name})',
                 'geom': b_geom
             })
@@ -165,7 +165,7 @@ def detect_encroachments():
                     'building_id': str(row.get('building_id', 'Unknown')),
                     'plot_id': 'N/A',
                     'iou': 0.0,
-                    'confidence_score': round(float(row.get('confidence_score', 0.95)), 2),
+                    'confidence_score': round((float(row.get('confidence_score', 0.95)) * 100) if float(row.get('confidence_score', 0.95)) <= 1.0 else float(row.get('confidence_score', 0.95)), 2),
                     'conflict_type': f'Zoning Violation ({zone_name})',
                     'geom': b_geom
                 })

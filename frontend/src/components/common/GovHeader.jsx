@@ -105,19 +105,14 @@ const GovHeader = () => {
                   to={item.path}
                   end={item.exact}
                   onClick={handleTabClick}
-                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-1 text-[11px] sm:text-xs font-semibold whitespace-nowrap transition-all duration-200 border-b-2 relative ${
-                    isActive
+                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-1 text-[11px] sm:text-xs font-semibold whitespace-nowrap transition-all duration-200 border-b-2 relative ${isActive
                       ? 'text-amber-300 border-b-gov-saffron bg-white/5'
                       : 'text-slate-300 border-b-transparent hover:text-white hover:bg-white/5'
-                  }`}
+                    }`}
                 >
                   <Icon size={14} className={isActive ? 'text-amber-300' : 'text-slate-400'} />
                   <span>{language === 'hi' ? item.labelHi : item.label}</span>
-                  {item.badge && (
-                    <span className="ml-0.5 text-[9px] font-mono bg-red-500 text-white px-1 py-px font-bold rounded-sm animate-pulse">
-                      {item.badge}
-                    </span>
-                  )}
+
                 </NavLink>
               );
             })}
@@ -132,9 +127,8 @@ const GovHeader = () => {
                   key={s}
                   type="button"
                   onClick={() => setFontScale(s)}
-                  className={`px-1.5 py-0.5 font-semibold transition-colors ${
-                    fontScale === s ? 'text-amber-400 bg-slate-800/60' : 'text-slate-400 hover:text-white'
-                  } ${s === 'base' ? 'border-x border-slate-500/30 text-[11px]' : s === 'lg' ? 'text-[12px]' : ''}`}
+                  className={`px-1.5 py-0.5 font-semibold transition-colors ${fontScale === s ? 'text-amber-400 bg-slate-800/60' : 'text-slate-400 hover:text-white'
+                    } ${s === 'base' ? 'border-x border-slate-500/30 text-[11px]' : s === 'lg' ? 'text-[12px]' : ''}`}
                   aria-label={`Font size ${s}`}
                 >
                   A{s === 'sm' ? '-' : s === 'lg' ? '+' : ''}

@@ -17,7 +17,7 @@ const GovFooter = () => {
             <AshokaChakra className="w-8 h-8 opacity-80" spokeColor="#60a5fa" ringColor="#93c5fd" />
             <div>
               <p className="text-xs font-bold text-white uppercase tracking-wider">
-                GeoHarmonize AI · SIH 2026 Prototype
+                NavNaksha· SIH 2026 Prototype
               </p>
               <p className="text-[11px] text-slate-400">
                 Department of Land Resources (DoLR) · Ministry of Rural Development

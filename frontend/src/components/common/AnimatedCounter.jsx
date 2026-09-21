@@ -30,11 +30,17 @@ const AnimatedCounter = ({
   const hasAnimated = useRef(false);
 
   useEffect(() => {
+    hasAnimated.current = false;
+  }, [to]);
+
+  useEffect(() => {
     if (!isInView || hasAnimated.current) return;
+    // Don't mark as animated if target is 0 and we might be waiting for data
+    // Or we can just let it animate to 0, but if `to` changes, the other effect resets it.
     hasAnimated.current = true;
 
     const startTime = performance.now();
-    const startVal = from;
+    const startVal = count; // Start from current count instead of `from` for smoother updates
     const endVal = to;
 
     const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);

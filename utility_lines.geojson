@@ -1,0 +1,24 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "utility_type": "400kV High-Tension Transmission Corridor"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            86.9,
+            21.509999999999998
+          ],
+          [
+            86.94,
+            21.47
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -55,7 +55,7 @@ export const DashboardProvider = ({ children }) => {
     };
 
     const fetchAllLayers = async () => {
-      const [plots, buildings, conflicts, municipal, utilities, gt, gnss, revenue, metrics, consensusRes] = await Promise.all([
+      const [plots, buildings, conflicts, municipal, utilities, gt, gnss, revenue, metrics] = await Promise.all([
         safeFetch(`${API_BASE_URL}/cadastral-plots`),
         safeFetch(`${API_BASE_URL}/buildings`),
         safeFetch(`${API_BASE_URL}/conflicts`),
@@ -65,9 +65,9 @@ export const DashboardProvider = ({ children }) => {
         safeFetch(`${API_BASE_URL}/gnss-cors`),
         safeFetch(`${API_BASE_URL}/revenue`),
         safeFetch(`${API_BASE_URL}/metrics`),
-        safeFetch(`${API_BASE_URL}/consensus`, 'POST'),
       ]);
-      setGeoData({
+      setGeoData((prev) => ({
+        ...prev,
         plots: plots || emptyFC,
         buildings: buildings || emptyFC,
         conflicts: conflicts || emptyFC,
@@ -77,10 +77,23 @@ export const DashboardProvider = ({ children }) => {
         gnss: gnss || emptyFC,
         revenue: Array.isArray(revenue) ? revenue : [],
         metrics: Array.isArray(metrics) ? metrics : [],
-        consensus: consensusRes?.results || [],
-      });
+        // consensus is NOT loaded here — it's too slow (runs game theory on 413 conflicts)
+        // Call fetchConsensus() explicitly from a page that needs it
+      }));
     };
     fetchAllLayers();
+  }, []);
+
+  // Separate on-demand function for the expensive consensus computation
+  const fetchConsensus = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/consensus`, { method: 'POST' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setGeoData((prev) => ({ ...prev, consensus: data?.results || [] }));
+    } catch (e) {
+      console.warn('[API] POST /consensus failed:', e.message);
+    }
   }, []);
 
   // Apply fontScale class to documentElement
@@ -103,7 +116,7 @@ export const DashboardProvider = ({ children }) => {
     setTimeout(() => {
       setEngineRunning(false);
       setToast({
-        message: 'Spatial Conflict Engine executed successfully — 8 active conflicts re-analyzed.',
+        message: 'Spatial Conflict Engine executed successfully ',
         type: 'success',
       });
     }, 2000);
@@ -111,14 +124,14 @@ export const DashboardProvider = ({ children }) => {
 
   const totalBuildings = geoData.buildings?.features?.length || 0;
   const encroachments = geoData.conflicts?.features?.length || 0;
-  
+
   const kpis = {
     totalAreaHectares: 12.85, // Stub
     totalBuildings,
     encroachments,
     accuracyRate: totalBuildings > 0 ? (((totalBuildings - encroachments) / totalBuildings) * 100).toFixed(1) : 100.0,
   };
-  
+
   const repaired = geoData.metrics?.find((m) => m.metric_name === 'Self-Intersecting Polygons Repaired')?.metric_value || 0;
   const snapped = geoData.metrics?.find((m) => m.metric_name === 'Building Edges Snapped to Boundaries')?.metric_value || 0;
   const plotsCount = geoData.plots?.features?.length || 0;
@@ -148,6 +161,7 @@ export const DashboardProvider = ({ children }) => {
         plotsCount,
         geoData,
         setGeoData,
+        fetchConsensus,
       }}
     >
       {children}

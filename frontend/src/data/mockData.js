@@ -467,7 +467,7 @@ export function computeKPIs() {
 }
 
 // ─── Map center (bounding box center of all data) ───────────────────
-export const MAP_CENTER = [26.853, 80.909];
+export const MAP_CENTER = [21.4934, 86.9336];
 export const MAP_ZOOM = 16;
 
 // ─── Jurisdictional Land Revenue & Verification Offices ──────────────

@@ -1,0 +1,5 @@
+point_id,surveyor,lat,lon,accuracy_m
+GT_101,Surveyor A. Nayak,21.494999999999997,86.925,0.02
+GT_102,Surveyor S. Mohapatra,21.482,86.912,0.03
+GT_103,Surveyor R. Das,21.502,86.917,0.01
+GT_104,Surveyor B. Sahoo,21.479999999999997,86.935,0.02

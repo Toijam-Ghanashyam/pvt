@@ -147,6 +147,59 @@ const BASEMAPS = {
 
 /* ── Main MapView component ────────────────────────────────────────── */
 
+const MapSearchControl = () => {
+  const map = useMap();
+  const [query, setQuery] = React.useState('');
+  const [results, setResults] = React.useState([]);
+  const [isSearching, setIsSearching] = React.useState(false);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setIsSearching(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setResults(data);
+    } catch (err) {
+      console.error("Search failed", err);
+    }
+    setIsSearching(false);
+  };
+
+  const flyToResult = (lat, lon) => {
+    map.flyTo([lat, lon], 16);
+    setResults([]);
+    setQuery('');
+  };
+
+  return (
+    <div className="absolute top-3 left-12 sm:left-14 z-[1000] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-300 dark:border-slate-700 shadow-lg rounded-md p-1.5 sm:p-2 flex flex-col w-48 sm:w-64 max-h-[300px]">
+      <form onSubmit={handleSearch} className="flex items-center gap-1.5 sm:gap-2">
+        <input 
+          type="text" 
+          value={query} 
+          onChange={(e) => setQuery(e.target.value)} 
+          placeholder="Search location..." 
+          className="w-full text-[11px] sm:text-xs bg-transparent outline-none text-slate-800 dark:text-slate-200"
+        />
+        <button type="submit" disabled={isSearching} className="text-[11px] sm:text-xs text-gov-navy dark:text-amber-400 font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-slate-100 dark:bg-slate-800 cursor-pointer">
+          {isSearching ? '...' : '🔍'}
+        </button>
+      </form>
+      {results.length > 0 && (
+        <ul className="mt-1.5 sm:mt-2 overflow-y-auto">
+          {results.slice(0, 5).map((r, i) => (
+            <li key={i} className="text-[10px] sm:text-xs py-1.5 border-b border-slate-200 dark:border-slate-700 last:border-0 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 truncate px-1" onClick={() => flyToResult(r.lat, r.lon)} title={r.display_name}>
+              {r.display_name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
 const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
   const { isDark } = useTheme();
   const { geoData } = useDashboard();
@@ -190,8 +243,8 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
 
   return (
     <div className="map-2d-view absolute inset-0 w-full h-full overflow-hidden border border-slate-300 dark:border-slate-800 shadow-sm transition-colors">
-      {/* Basemap Switcher Control (Top Right) */}
-      <div className="absolute top-3 right-3 z-[1000] bg-white/95 dark:bg-[#0c1829]/95 backdrop-blur-xs border border-slate-300 dark:border-slate-700 shadow-md p-1 flex items-center gap-1 select-none">
+      {/* Basemap Switcher Control (Top Right below MapTabs) */}
+      <div className="absolute top-14 right-3 z-[1000] bg-white/95 dark:bg-[#0c1829]/95 backdrop-blur-xs border border-slate-300 dark:border-slate-700 shadow-md p-1 flex items-center gap-1 select-none">
         {Object.entries(BASEMAPS).map(([key, bm]) => (
           <button
             key={key}
@@ -216,6 +269,7 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
         scrollWheelZoom={true}
       >
         <MapResizer />
+        <MapSearchControl />
 
         {/* Selected Base tile layer */}
         <TileLayer
@@ -238,7 +292,7 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
         {/* AI Buildings — green */}
         {layers.buildings && (
           <GeoJSON
-            key="buildings"
+            key={`buildings-${geoData?.buildings?.features?.length ?? 0}`}
             data={geoData?.buildings || { type: 'FeatureCollection', features: [] }}
             style={buildingStyle}
           />
@@ -247,7 +301,7 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
         {/* Municipal Zoning — purple dashed */}
         {layers.municipal && (
           <GeoJSON
-            key="municipal"
+            key={`municipal-${geoData?.municipal?.features?.length ?? 0}`}
             data={geoData?.municipal || { type: 'FeatureCollection', features: [] }}
             style={municipalStyle}
             onEachFeature={onEachMunicipal}
@@ -257,7 +311,7 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
         {/* Utility Networks — cyan lines */}
         {layers.utilities && (
           <GeoJSON
-            key="utilities"
+            key={`utilities-${geoData?.utilities?.features?.length ?? 0}`}
             data={geoData?.utilities || { type: 'FeatureCollection', features: [] }}
             style={utilityStyle}
             onEachFeature={onEachUtility}
@@ -303,7 +357,7 @@ const MapView = ({ layers, selectedPlotId, onPlotClick }) => {
         {/* Spatial Conflicts — red (drawn on top of everything) */}
         {layers.conflicts && (
           <GeoJSON
-            key="conflicts"
+            key={`conflicts-${geoData?.conflicts?.features?.length ?? 0}`}
             data={geoData?.conflicts || { type: 'FeatureCollection', features: [] }}
             style={conflictStyle}
             onEachFeature={onEachConflict}

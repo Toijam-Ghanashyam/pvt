@@ -109,23 +109,34 @@ const PlotInspectionPanel = ({ selectedPlotId }) => {
     );
   }
 
-  /* Find revenue record for the selected plot */
-  const record = (geoData.revenue || []).find((r) => r.plot_id === selectedPlotId);
+  /* Find revenue record for the selected plot — coerce both sides to string
+     because the DB returns plot_id as an integer but the map passes it as a string */
+  const record = (geoData.revenue || []).find(
+    (r) => String(r.plot_id) === String(selectedPlotId)
+  );
+
+  /* Pull owner_name from the cadastral plots layer as a fallback */
+  const plotFeature = (geoData.plots?.features || []).find(
+    (f) => String(f.properties.plot_id) === String(selectedPlotId)
+  );
+  const ownerName = record?.owner_name || plotFeature?.properties?.owner_name || 'Unknown';
 
   /* Find linked conflict (if any) */
   const conflict = (geoData.conflicts?.features || []).find(
-    (f) => f.properties.plot_id === selectedPlotId
+    (f) => String(f.properties.plot_id) === String(selectedPlotId)
   );
 
-  if (!record) {
+  if (!record && !plotFeature) {
     return (
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6 text-center transition-colors">
-        <p className="text-sm text-slate-400 dark:text-slate-500">No revenue record found for {selectedPlotId}.</p>
+        <p className="text-sm text-slate-400 dark:text-slate-500">No revenue record found for plot <strong>{selectedPlotId}</strong>.</p>
       </div>
     );
   }
 
-  const discrepancy = Math.abs(record.registered_area_sqm - record.gis_area_sqm);
+  const regArea = Number(record?.registered_area_sqm ?? 0);
+  const gisArea = Number(record?.gis_area_sqm ?? regArea);
+  const discrepancy = Math.abs(regArea - gisArea);
   const isLargeDiscrepancy = discrepancy > 10;
 
   return (
@@ -154,7 +165,7 @@ const PlotInspectionPanel = ({ selectedPlotId }) => {
       <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
         {/* Row 1: Owner, Tax Status, Tax ID */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-          <StatCell icon={User} label="Legal Owner" value={record.owner_name} />
+          <StatCell icon={User} label="Legal Owner" value={ownerName} />
           <StatCell
             icon={Receipt}
             label="Property Tax Status"
@@ -167,13 +178,13 @@ const PlotInspectionPanel = ({ selectedPlotId }) => {
                   : 'text-emerald-600 dark:text-emerald-400'
             }
           />
-          <StatCell icon={Hash} label="Tax ID" value={record.tax_id} />
+          <StatCell icon={Hash} label="Tax ID" value={record?.tax_id ?? 'N/A'} />
         </div>
 
         {/* Row 2: Registered Area, GIS Area, Discrepancy */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-          <StatCell icon={Ruler} label="Registered Area" value={`${record.registered_area_sqm} m²`} />
-          <StatCell icon={Ruler} label="GIS Surveyed Area" value={`${record.gis_area_sqm} m²`} />
+          <StatCell icon={Ruler} label="Registered Area" value={`${regArea.toLocaleString()} m²`} />
+          <StatCell icon={Ruler} label="GIS Surveyed Area" value={record?.gis_area_sqm != null ? `${gisArea.toLocaleString()} m²` : 'Pending Survey'} />
           <StatCell
             icon={AlertCircle}
             label="Area Discrepancy"

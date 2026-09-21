@@ -98,11 +98,10 @@ const GovNavTabs = () => {
                 to={item.path}
                 end={item.exact}
                 onClick={handleTabClick}
-                className={`flex items-center gap-2 px-3 sm:px-5 py-3 text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors border-r border-[#1b3a63] first:border-l relative ${
-                  isActive
+                className={`flex items-center gap-2 px-3 sm:px-5 py-3 text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors border-r border-[#1b3a63] first:border-l relative ${isActive
                     ? 'bg-[#183a69] text-amber-300 border-b-4 border-b-gov-saffron font-bold'
                     : 'text-slate-200 hover:text-white hover:bg-[#11294c] border-b-4 border-b-transparent'
-                }`}
+                  }`}
               >
                 <Icon size={16} className={isActive ? 'text-amber-300' : 'text-slate-300'} />
                 <span>{language === 'hi' ? item.labelHi : item.labelEn}</span>
@@ -115,11 +114,7 @@ const GovNavTabs = () => {
                 )}
 
                 {/* Alert badge for Conflicts tab */}
-                {item.badgeKey === 'conflicts' && (
-                  <span className="ml-1 text-[10px] font-mono bg-red-600 text-white px-1.5 py-0.2 font-bold animate-pulse">
-                    8
-                  </span>
-                )}
+
               </NavLink>
             );
           })}

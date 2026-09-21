@@ -48,6 +48,7 @@ const ConflictsPage = () => {
   const [sortKey, setSortKey] = useState('confidence_score');
   const [sortDir, setSortDir] = useState('desc');
   const [activeFilter, setActiveFilter] = useState('ALL');
+  const [conflictTypeFilter, setConflictTypeFilter] = useState('ALL');
   const [modalOpen, setModalOpen] = useState(false);
   const [activeModalConflict, setActiveModalConflict] = useState(null);
 
@@ -62,6 +63,11 @@ const ConflictsPage = () => {
       .catch((err) => console.error("Error fetching conflicts:", err));
   }, []);
 
+  const uniqueConflictTypes = useMemo(() => {
+    const types = new Set(rawConflicts.map((c) => c.conflict_type).filter(Boolean));
+    return ['ALL', ...Array.from(types)];
+  }, [rawConflicts]);
+
   const filteredConflicts = useMemo(() => {
     let list = rawConflicts;
     if (activeFilter === 'SEVERE') {
@@ -70,6 +76,10 @@ const ConflictsPage = () => {
       list = list.filter((c) => c.confidence_score >= 50 && c.confidence_score < 78);
     } else if (activeFilter === 'CONFIRMED') {
       list = list.filter((c) => c.confidence_score >= 78);
+    }
+
+    if (conflictTypeFilter !== 'ALL') {
+      list = list.filter((c) => c.conflict_type === conflictTypeFilter);
     }
 
     return [...list].sort((a, b) => {
@@ -184,9 +194,22 @@ const ConflictsPage = () => {
           ))}
         </div>
 
-        <span className="text-[11px] text-slate-500 font-mono">
-          Sorted by: {sortKey.toUpperCase()} ({sortDir.toUpperCase()})
-        </span>
+        <div className="flex items-center gap-3">
+          <select
+            value={conflictTypeFilter}
+            onChange={(e) => setConflictTypeFilter(e.target.value)}
+            className="text-xs border border-slate-300 dark:border-slate-700 rounded-md px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:border-gov-navy focus:ring-1 focus:ring-gov-navy"
+          >
+            {uniqueConflictTypes.map((type) => (
+              <option key={type} value={type}>
+                {type === 'ALL' ? 'All Conflict Types' : type}
+              </option>
+            ))}
+          </select>
+          <span className="text-[11px] text-slate-500 font-mono hidden sm:inline-block">
+            Sorted by: {sortKey.toUpperCase()} ({sortDir.toUpperCase()})
+          </span>
+        </div>
       </div>
 
       <div className="gov-box overflow-x-auto">

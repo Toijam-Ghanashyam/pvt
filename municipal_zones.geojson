@@ -1,0 +1,38 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "zone_name": "Eco-Sensitive Green Belt & Flood Zone"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              86.895,
+              21.465
+            ],
+            [
+              86.94500000000001,
+              21.465
+            ],
+            [
+              86.94500000000001,
+              21.479999999999997
+            ],
+            [
+              86.895,
+              21.479999999999997
+            ],
+            [
+              86.895,
+              21.465
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -24,7 +24,8 @@ const AnalyticsPage = () => {
   });
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/v1/topology-metrics')
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    fetch(`${API_BASE}/topology-metrics`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.counts) {

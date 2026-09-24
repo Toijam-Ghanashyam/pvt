@@ -53,7 +53,8 @@ const ConflictsPage = () => {
   const [activeModalConflict, setActiveModalConflict] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/v1/conflicts')
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    fetch(`${API_BASE}/conflicts`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.features) {

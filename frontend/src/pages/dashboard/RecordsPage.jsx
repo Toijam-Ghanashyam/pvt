@@ -22,7 +22,8 @@ const RecordsPage = () => {
   const [downloadingId, setDownloadingId] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/v1/revenue-records')
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    fetch(`${API_BASE}/revenue-records`)
       .then((res) => res.json())
       .then((data) => setRevenueRecords(data))
       .catch((err) => console.error("Error fetching revenue records:", err));

@@ -24,7 +24,8 @@ const IngestionPage = () => {
   const [auditLogs, setAuditLogs] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/v1/audit-logs')
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    fetch(`${API_BASE}/audit-logs`)
       .then(res => res.json())
       .then(data => setAuditLogs(data))
       .catch(err => console.error("Failed to load audit logs", err));

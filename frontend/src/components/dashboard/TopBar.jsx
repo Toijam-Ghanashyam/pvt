@@ -13,7 +13,7 @@ const TopBar = ({ onRerun, isRunning }) => {
       {/* Product wordmark — matches the landing page Navbar */}
       <Link to="/" className="flex items-center gap-2 group">
         <span className="text-white text-lg sm:text-xl font-bold tracking-tight group-hover:text-teal-300 transition-colors">
-          GeoHarmonize <span className="text-teal-400">AI</span>
+          Drishti <span className="text-teal-400">AI</span>
         </span>
         <span className="text-[10px] text-slate-400 border border-slate-600 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
           Dashboard

@@ -99,8 +99,8 @@ const GovNavTabs = () => {
                 end={item.exact}
                 onClick={handleTabClick}
                 className={`flex items-center gap-2 px-3 sm:px-5 py-3 text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors border-r border-[#1b3a63] first:border-l relative ${isActive
-                    ? 'bg-[#183a69] text-amber-300 border-b-4 border-b-gov-saffron font-bold'
-                    : 'text-slate-200 hover:text-white hover:bg-[#11294c] border-b-4 border-b-transparent'
+                  ? 'bg-[#183a69] text-amber-300 border-b-4 border-b-gov-saffron font-bold'
+                  : 'text-slate-200 hover:text-white hover:bg-[#11294c] border-b-4 border-b-transparent'
                   }`}
               >
                 <Icon size={16} className={isActive ? 'text-amber-300' : 'text-slate-300'} />
@@ -144,7 +144,7 @@ const GovNavTabs = () => {
             <ChevronRight size={12} className="text-slate-500" />
             <span className="text-slate-400">DoLR</span>
             <ChevronRight size={12} className="text-slate-500" />
-            <span className="text-slate-400">GeoHarmonize AI</span>
+            <span className="text-slate-400">Drishti AI</span>
             <ChevronRight size={12} className="text-slate-500" />
             <span className="text-amber-300 font-semibold">
               {language === 'hi' ? currentNav.labelHi : currentNav.labelEn}

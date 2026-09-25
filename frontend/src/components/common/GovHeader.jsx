@@ -81,7 +81,7 @@ const GovHeader = () => {
             <AshokaLionCapital className="w-7 h-9 sm:w-8 sm:h-10 text-white" />
             <div className="hidden sm:flex flex-col">
               <span className="text-sm sm:text-base font-bold tracking-tight leading-tight">
-                GeoHarmonize <span className="text-amber-400">AI</span>
+                Drishti <span className="text-amber-400">AI</span>
               </span>
               <span className="text-[9px] text-slate-400 leading-tight">DoLR · SIH 2026</span>
             </div>
@@ -106,8 +106,8 @@ const GovHeader = () => {
                   end={item.exact}
                   onClick={handleTabClick}
                   className={`flex items-center gap-1.5 px-3 sm:px-4 py-1 text-[11px] sm:text-xs font-semibold whitespace-nowrap transition-all duration-200 border-b-2 relative ${isActive
-                      ? 'text-amber-300 border-b-gov-saffron bg-white/5'
-                      : 'text-slate-300 border-b-transparent hover:text-white hover:bg-white/5'
+                    ? 'text-amber-300 border-b-gov-saffron bg-white/5'
+                    : 'text-slate-300 border-b-transparent hover:text-white hover:bg-white/5'
                     }`}
                 >
                   <Icon size={14} className={isActive ? 'text-amber-300' : 'text-slate-400'} />
@@ -175,7 +175,7 @@ const GovHeader = () => {
             <ChevronRight size={10} className="text-slate-600" />
             <span className="text-slate-400">DoLR</span>
             <ChevronRight size={10} className="text-slate-600" />
-            <span className="text-slate-400">GeoHarmonize AI</span>
+            <span className="text-slate-400">Drishti AI</span>
             <ChevronRight size={10} className="text-slate-600" />
             <span className="text-amber-300 font-semibold">
               {language === 'hi' ? currentNav.labelHi : currentNav.label}

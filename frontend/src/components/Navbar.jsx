@@ -13,15 +13,15 @@ const ScrollProgressTricolor = () => {
       const scroll = totalScroll / windowHeight;
       setScrollProgress(scroll * 100);
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
     <div className="w-full h-1.5 bg-navy-900/50 absolute top-0 left-0 z-50">
-      <div 
-        className="h-full india-tricolor-bar transition-all duration-75 ease-out" 
+      <div
+        className="h-full india-tricolor-bar transition-all duration-75 ease-out"
         style={{ width: `${scrollProgress}%` }}
       />
     </div>
@@ -44,26 +44,26 @@ const Navbar = () => {
       <nav className="bg-navy-800 dark:bg-slate-900 border-b border-navy-700 dark:border-slate-800 transition-colors duration-200 relative pt-1.5">
         {/* Tri-color National Stripe filling from left to right on scroll */}
         <ScrollProgressTricolor />
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex-shrink-0 flex items-center gap-2.5">
               <Link to="/" onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })} className="flex items-center gap-2.5 group">
-                <img 
-                  src="/White_Ashoka.png" 
-                  alt="State Emblem of India - Lion Capital of Ashoka" 
-                  className="h-11 sm:h-12 w-auto object-contain drop-shadow-md group-hover:scale-105 transition-transform" 
+                <img
+                  src="/White_Ashoka.png"
+                  alt="State Emblem of India - Lion Capital of Ashoka"
+                  className="h-11 sm:h-12 w-auto object-contain drop-shadow-md group-hover:scale-105 transition-transform"
                 />
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-white text-xl font-bold tracking-tight">GeoHarmonize <span className="text-accent-teal">AI</span></span>
+                    <span className="text-white text-xl font-bold tracking-tight">Drishti <span className="text-accent-teal">AI</span></span>
                     <span className="text-[10px] text-amber-300 border border-amber-400/40 bg-amber-400/10 px-1 py-0.2 rounded-none uppercase tracking-wider font-mono font-semibold">DoLR</span>
                   </div>
                   <span className="text-[10px] text-slate-300 hidden sm:block">Govt. of India · SIH 2026</span>
                 </div>
               </Link>
             </div>
-            
+
             <div className="hidden md:flex space-x-6 items-center">
               {navLinks.map((link) => (
                 <a key={link.name} href={link.href} className="nav-link">

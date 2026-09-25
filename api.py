@@ -288,7 +288,10 @@ async def upload_file(layer_type: str = Form(...), file: UploadFile = File(...))
 
         return {"status": "success", "summary": ", ".join(ingested_summary)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        error_msg = str(e)
+        if "duplicate key value violates unique constraint" in error_msg:
+            raise HTTPException(status_code=400, detail="Duplicate data detected! These records already exist in the database. To test the upload feature again, please run 'python reset_db.py' locally to clear the database first.")
+        raise HTTPException(status_code=500, detail=error_msg)
 
 # 1. Enable CORS so your Netlify frontend can make requests to this backend
 app.add_middleware(
@@ -334,6 +337,24 @@ def get_engine():
 @app.get("/")
 def health_check():
     return {"status": "Active", "service": "NAKSHA GeoAPI"}
+
+@app.get("/api/v1/reset")
+def reset_database():
+    engine = get_engine()
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("TRUNCATE TABLE spatial_conflicts CASCADE;"))
+            conn.execute(text("TRUNCATE TABLE ai_buildings CASCADE;"))
+            conn.execute(text("TRUNCATE TABLE revenue_records CASCADE;"))
+            conn.execute(text("TRUNCATE TABLE cadastral_plots CASCADE;"))
+            conn.execute(text("TRUNCATE TABLE municipal_layers CASCADE;"))
+            conn.execute(text("TRUNCATE TABLE utility_lines CASCADE;"))
+            conn.execute(text("TRUNCATE TABLE gt_surveys CASCADE;"))
+            conn.execute(text("TRUNCATE TABLE gnss_cors CASCADE;"))
+            conn.execute(text("DROP TABLE IF EXISTS topology_metrics;"))
+        return {"status": "success", "message": "Database cleared successfully. Ready for fresh uploads."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/v1/cadastral-plots")
 def get_cadastral_plots():

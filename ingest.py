@@ -61,6 +61,11 @@ OWNER_NAME_FIELDS = (
 
 
 def get_engine():
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        return create_engine(database_url)
     DB_USER = os.environ.get('DB_USER', 'postgres')
     DB_PASS = os.environ.get('DB_PASS', 'Luwang2006@')
     DB_HOST = os.environ.get('DB_HOST', 'localhost')

@@ -43,18 +43,24 @@ def get_db_connection():
     dbname = os.getenv("DB_NAME", "postgres")
     user = os.getenv("DB_USER", "postgres")
     password = os.getenv("DB_PASS", "Luwang2006@")
+    database_url = os.getenv("DATABASE_URL")
 
     conn = None
     try:
         import psycopg2
-        conn = psycopg2.connect(
-            host=host,
-            port=port,
-            dbname=dbname,
-            user=user,
-            password=password,
-            connect_timeout=5,
-        )
+        if database_url:
+            if database_url.startswith("postgres://"):
+                database_url = database_url.replace("postgres://", "postgresql://", 1)
+            conn = psycopg2.connect(database_url, connect_timeout=10)
+        else:
+            conn = psycopg2.connect(
+                host=host,
+                port=port,
+                dbname=dbname,
+                user=user,
+                password=password,
+                connect_timeout=5,
+            )
         yield conn
     except Exception as exc:
         logger.warning(f"Database connection could not be established: {exc}")

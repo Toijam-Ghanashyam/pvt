@@ -1,0 +1,3 @@
+# Dependencies for local drone building segmentation (extract.py)
+# Requires PyTorch and GPU/CPU machine
+segment-geospatial[samgeo3]>=0.12.0

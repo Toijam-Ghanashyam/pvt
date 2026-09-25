@@ -7,21 +7,27 @@ from shapely.validation import make_valid
 from shapely.ops import snap
 
 # Database connection parameters
-DB_USER = os.environ.get('DB_USER', 'postgres')
-DB_PASS = os.environ.get('DB_PASS', 'Luwang2006@')
-DB_HOST = os.environ.get('DB_HOST', 'localhost')
-DB_PORT = os.environ.get('DB_PORT', '5432')
-DB_NAME = os.environ.get('DB_NAME', 'postgres')
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    engine = create_engine(database_url)
+else:
+    DB_USER = os.environ.get('DB_USER', 'postgres')
+    DB_PASS = os.environ.get('DB_PASS', 'Luwang2006@')
+    DB_HOST = os.environ.get('DB_HOST', 'localhost')
+    DB_PORT = os.environ.get('DB_PORT', '5432')
+    DB_NAME = os.environ.get('DB_NAME', 'postgres')
 
-db_url = URL.create(
-    "postgresql",
-    username=DB_USER,
-    password=DB_PASS,
-    host=DB_HOST,
-    port=DB_PORT,
-    database=DB_NAME,
-)
-engine = create_engine(db_url)
+    db_url = URL.create(
+        "postgresql",
+        username=DB_USER,
+        password=DB_PASS,
+        host=DB_HOST,
+        port=DB_PORT,
+        database=DB_NAME,
+    )
+    engine = create_engine(db_url)
 
 def safe_load_postgis(table_name: str, crs_target="EPSG:3857"):
     """Safely loads PostGIS layers and guarantees they are projected properly."""

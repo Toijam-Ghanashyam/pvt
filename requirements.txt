@@ -1,10 +1,10 @@
+fastapi>=0.110.0
+uvicorn>=0.28.0
 geopandas>=0.14.0
+pandas>=2.0.0
 sqlalchemy>=2.0.0
 psycopg2-binary>=2.9.0
 shapely>=2.0.0
-segment-geospatial[samgeo3]>=0.12.0
-fastapi>=0.110.0
-uvicorn>=0.28.0
-reportlab
-python-multipart
-geoalchemy2
+geoalchemy2>=0.14.0
+reportlab>=4.0.0
+python-multipart>=0.0.9

@@ -296,6 +296,17 @@ app.add_middleware(
 
 # ─── Shared SQLAlchemy engine (created once at startup) ──────────────
 def _build_engine():
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        return create_engine(
+            database_url,
+            pool_size=5,          # max persistent connections in the pool
+            max_overflow=10,      # extra connections allowed beyond pool_size
+            pool_pre_ping=True,   # test connections before using them
+            pool_recycle=300,     # recycle connections every 5 minutes
+        )
     DB_USER = os.environ.get("DB_USER", "postgres")
     DB_PASS = os.environ.get("DB_PASS", "Luwang2006@")
     DB_HOST = os.environ.get("DB_HOST", "localhost")

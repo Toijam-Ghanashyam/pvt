@@ -210,7 +210,8 @@ def ensure_table_exists(engine) -> None:
 def main() -> int:
     shapefiles = find_shapefiles(INCOMING_DIR)
     if not shapefiles:
-        logger.error("No shapefiles found in %s", INCOMING_DIR)
+        logger.warning("No shapefiles found in %s", INCOMING_DIR)
+        logger.info("ℹ️ To seed the database with the ready-made datasets (cadastral.geojson, buildings.geojson, revenue.csv), run: python seed_db.py")
         return 1
 
     engine = get_engine()
